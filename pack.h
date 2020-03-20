@@ -1,10 +1,11 @@
-
 #ifndef PACK_H
 #define PACK_H
 
+#include <string>
+
 void Initialize();
-char* pack(char format, int dec);
-int unpack(char format, char *data);
+std::string pack(char format, int dec);
+int unpack(char format, std::string data);
 
 
 #endif /* PACK_H */

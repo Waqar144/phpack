@@ -1,5 +1,5 @@
 #include <iostream>
-#include "p.h"
+#include "pack.h"
 #include <cstring>
 
 int main()
@@ -8,9 +8,9 @@ int main()
 
     std::cout << "Trying PHP pack() in c++\n";
 
-    auto result = pack('v', 65534);
+    auto result = pack('v', 2787);
 
-    std::cout << "RESULT: " << result << std::strlen(result) << std::endl;
+    std::cout << "RESULT: " << result << result << std::endl;
 
     int up = unpack('v', result);
 

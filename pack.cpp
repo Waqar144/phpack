@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/param.h>
+#include <string>
 
 #include <stdint.h>
 
@@ -121,7 +122,7 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
    Takes one or more arguments and packs them into a binary string according to the format argument
  * If the first ARG is a Buffer(), is that as the output instead of creating its own buffer.
  */
-char* pack(char code, int dec)
+std::string pack(char code, int dec)
 {
     int outputpos = 0, outputsize = 0;
     int i;
@@ -146,7 +147,6 @@ char* pack(char code, int dec)
 
     switch (code) {
     case 'v': {
-        printf("little endian\n");
         int *map = machine_endian_short_map;
 
         if (code == 'n') {
@@ -162,13 +162,15 @@ char* pack(char code, int dec)
     }
     }
     output[outputpos] = '\0';
-    return output;
+    std::string ret{output};
+    free(output);
+    return ret;
 }
 
-static long php_unpack(char *data, int size, int issigned, int *map)
+static long php_unpack(const char *data, int size, int issigned, int *map)
 {
     long result;
-    char *cresult = (char *) &result;
+    char *cresult = reinterpret_cast<char *>(&result);
     int i;
 
     result = issigned ? -1 : 0;
@@ -180,13 +182,13 @@ static long php_unpack(char *data, int size, int issigned, int *map)
     return result;
 }
 
-int unpack(char format, char *data)
+int unpack(char format, std::string data)
 {
-    char        *input = data;
+    const char *input = data.c_str();
     int         inputpos = 0, inputlen = 0;
     int size = 0;
 
-    inputlen = strlen(data) + 1;
+    inputlen = strlen(input) + 1;
 
     switch (format) {
     /* Never use any input */
@@ -215,8 +217,6 @@ int unpack(char format, char *data)
 
             v = php_unpack(&input[inputpos], 2, issigned, map);
             return (int)v;
-            //add_assoc_long(return_value, n, v);
-            //return_value->Set( v8::String::NewFromUtf8(isolate,n), v8::Integer::New(isolate,v) );
             break;
         }
         }
