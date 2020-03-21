@@ -7,14 +7,12 @@
 #include <fcntl.h>
 #include <sys/param.h>
 #include <string>
-
 #include <stdint.h>
-
-#include "pack.h"
-
 #if HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
+
+#include "pack.h"
 
 #include <assert.h>
 
@@ -33,16 +31,10 @@
 #endif
 
 #ifdef ENABLE_LONG64
-# define SIZEOF_ZEND_LONG 8
+# define SIZEOF_LONG 8
 #else
-# define SIZEOF_ZEND_LONG 4
+# define SIZEOF_LONG 4
 #endif
-
-inline double ToDouble(int value)
-{
-	return static_cast<double>(value);
-}
-
 
 /* Whether machine is little endian */
 static char machine_little_endian;
@@ -63,7 +55,7 @@ static int machine_endian_long_map[4];
 static int big_endian_long_map[4];
 static int little_endian_long_map[4];
 
-#if SIZEOF_ZEND_LONG > 4
+#if SIZEOF_LONG > 4
 /* Mappings of bytes from quads (64bit) for all endian environments */
 static int machine_endian_longlong_map[8];
 static int big_endian_longlong_map[8];
@@ -71,22 +63,20 @@ static int little_endian_longlong_map[8];
 #endif
 
 
-/* {{{ NODEJS_pack
- */
-static void php_pack(u_int32_t val, int size, int *map, char *output)
+static void php_pack(u_int32_t val, size_t size, int *map, char *output)
 {
-    int i;
-    unsigned char *v;
+    char *v;
+    v = reinterpret_cast<char *>(&val);
 
-    //convert_to_long_ex(val);
-    v = (unsigned char *) &val;
-
-    for (i = 0; i < size; i++) {
-//        if( IsDebug()>0 ) printf("currentValue every Byte value=%d\n", v[map[i]] );
+    for (size_t i = 0; i < size; i++) {
         *output++ = v[map[i]];
     }
 }
-/* }}} */
+
+inline double ToDouble(int value)
+{
+    return static_cast<double>(value);
+}
 
 static inline uint32_t php_pack_reverse_int32(uint32_t arg)
 {
@@ -240,7 +230,6 @@ void Initialize()
 
     if (machine_little_endian) {
         /* Where to get lo to hi bytes from */
-        printf("machine is litte endian\n");
         byte_map[0] = 0;
 
         for (i = 0; i < (int)sizeof(int); i++) {
@@ -266,7 +255,7 @@ void Initialize()
         little_endian_long_map[1] = 1;
         little_endian_long_map[2] = 2;
         little_endian_long_map[3] = 3;
-#if SIZEOF_ZEND_LONG > 4
+#if SIZEOF_LONG > 4
         machine_endian_longlong_map[0] = 0;
         machine_endian_longlong_map[1] = 1;
         machine_endian_longlong_map[2] = 2;
@@ -295,7 +284,6 @@ void Initialize()
 
     }
     else {
-        printf("machine is big endian\n");
         int val;
         int size = sizeof((val));
 
@@ -325,7 +313,7 @@ void Initialize()
         little_endian_long_map[1] = size - 2;
         little_endian_long_map[2] = size - 3;
         little_endian_long_map[3] = size - 4;
-#if SIZEOF_ZEND_LONG > 4
+#if SIZEOF_LONG > 4
         machine_endian_longlong_map[0] = size - 8;
         machine_endian_longlong_map[1] = size - 7;
         machine_endian_longlong_map[2] = size - 6;
