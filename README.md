@@ -4,11 +4,12 @@ This library provides c++ alternatives to the php `pack()` and `unpack()` functi
 
 ## Supported formats
 
-Code | Description |
-------------------
-v    | unsigned short (little endian byte order) |
+|Code| Description  |
+|--|--|
+|v | unsigned short (little endian byte order)  |
 
-Currently only `'v'` is supported.
+
+Note: Currently only `'v'` is supported. More options are being added
 
 ## Usage
 
