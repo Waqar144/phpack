@@ -1,16 +1,16 @@
 // (c) 2020 Mediapark
 // Author: Waqar Ahmed <waqar.17a@gmail.com>
 // This code is licensed under MIT license (see LICENSE for details)
+#include <errno.h>
+#include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/param.h>
 #include <string>
-#include <stdint.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #if HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -19,24 +19,24 @@
 
 #include <assert.h>
 
-#define INC_OUTPUTPOS(a,b) \
-        if ((a) < 0 || ((INT_MAX - outputpos)/((int)b)) < (a)) { \
-                printf( "Type %c: integer overflow in format string", code); \
-        } \
-        outputpos += (a)*(b);
+#define INC_OUTPUTPOS(a, b)                                                                        \
+    if ((a) < 0 || ((INT_MAX - outputpos) / ((int)b)) < (a)) {                                     \
+        printf("Type %c: integer overflow in format string", code);                                \
+    }                                                                                              \
+    outputpos += (a) * (b);
 
-#define safe_emalloc(len,objsize,setwith)	malloc( len*objsize )
+#define safe_emalloc(len, objsize, setwith) malloc(len *objsize)
 
-#define ToCString(value)   (*value ? *value : "<string conversion failed>")
+#define ToCString(value) (*value ? *value : "<string conversion failed>")
 
 #if defined(__x86_64__) || defined(__LP64__) || defined(_LP64) || defined(_WIN64)
-# define ENABLE_LONG64 1
+#define ENABLE_LONG64 1
 #endif
 
 #ifdef ENABLE_LONG64
-# define SIZEOF_LONG 8
+#define SIZEOF_LONG 8
 #else
-# define SIZEOF_LONG 4
+#define SIZEOF_LONG 4
 #endif
 
 /* Whether machine is little endian */
@@ -65,7 +65,6 @@ static int big_endian_longlong_map[8];
 static int little_endian_longlong_map[8];
 #endif
 
-
 static void php_pack(u_int32_t val, size_t size, int *map, char *output)
 {
     char *v;
@@ -84,7 +83,8 @@ inline double ToDouble(int value)
 static inline uint32_t php_pack_reverse_int32(uint32_t arg)
 {
     uint32_t result;
-    result = ((arg & 0xFF) << 24) | ((arg & 0xFF00) << 8) | ((arg >> 8) & 0xFF00) | ((arg >> 24) & 0xFF);
+    result =
+        ((arg & 0xFF) << 24) | ((arg & 0xFF00) << 8) | ((arg >> 8) & 0xFF00) | ((arg >> 24) & 0xFF);
 
     return result;
 }
@@ -104,7 +104,7 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
 
 // We define a max size, since we want to avoid any mallocs() theres are on the stack and faster.
 // I think 48 is enough for 99.99% cases. Next release we might have a init option
-#define MAX_FORMAT_CODES		(48)
+#define MAX_FORMAT_CODES (48)
 
 // We also store the output locally in the stack if its under 256 bytes in size, else we malloc it.
 
@@ -126,7 +126,7 @@ std::string pack(char code, int dec)
     for (i = 0; i < formatcount; i++) {
         switch (code) {
         case 'v':
-            INC_OUTPUTPOS(dec, 2)		/* 16 bit per arg */
+            INC_OUTPUTPOS(dec, 2) /* 16 bit per arg */
             break;
         }
         if (outputsize < outputpos) {
@@ -134,9 +134,8 @@ std::string pack(char code, int dec)
         }
     }
 
-    output = (char*)malloc(outputsize);
+    output = (char *)malloc(outputsize);
     outputpos = 0;
-
 
     switch (code) {
     case 'v': {
@@ -178,7 +177,7 @@ static long php_unpack(const char *data, int size, int issigned, int *map)
 int unpack(char format, std::string data)
 {
     const char *input = data.c_str();
-    int         inputpos = 0, inputlen = 0;
+    int inputpos = 0, inputlen = 0;
     int size = 0;
 
     inputlen = strlen(input) + 1;
@@ -217,7 +216,7 @@ int unpack(char format, std::string data)
         inputpos += size;
         if (inputpos < 0) {
             if (size != -1) { /* only print warning if not working with * */
-                printf( "Type %c: outside of string", format);
+                printf("Type %c: outside of string", format);
             }
             inputpos = 0;
         }
@@ -285,8 +284,7 @@ void Initialize()
         little_endian_longlong_map[7] = 7;
 #endif
 
-    }
-    else {
+    } else {
         int val;
         int size = sizeof((val));
 
