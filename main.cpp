@@ -8,11 +8,11 @@ int main()
 
     std::cout << "Trying PHP pack() in c++\n";
 
-    auto result = PhPacker::pack('n', 65535);
+    auto result = PhPacker::pack('v', 258);
 
     std::cout << "RESULT: " << result << result << std::endl;
 
-    int up = PhPacker::unpack('n', result);
+    int up = PhPacker::unpack('v', result);
 
     std::cout << "UNPACK RESULT: " << up << std::endl;
 
