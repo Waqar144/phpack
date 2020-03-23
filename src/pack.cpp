@@ -116,6 +116,10 @@ std::string pack(char code, int val)
     case 'v':
         INC_OUTPUTPOS(val, 2) /* 16 bit per arg */
         break;
+    case 'i':
+    case 'I':
+        INC_OUTPUTPOS(val, sizeof(int))
+        break;
     }
 
     if (outputsize < outputpos) {
@@ -143,6 +147,10 @@ std::string pack(char code, int val)
         outputpos += 2;
         break;
     }
+    case 'i':
+    case 'I':
+        php_pack(val, sizeof(int), int_map, output);
+        break;
     }
     return output;
 }
@@ -177,32 +185,46 @@ int unpack(char format, const std::string &data)
     case 'v':
         size = 2;
         break;
+    case 'i':
+    case 'I':
+        size = sizeof(int);
+        break;
     default:
         break;
     }
 
     /* Do actual unpacking */
-    if ((inputpos + size) <= inputlen && input != NULL) {
+    if ((inputpos + size) <= inputlen) {
         switch (format) {
         case 's':
         case 'S':
         case 'n':
         case 'v': {
             long v = 0;
-            bool issigned = false;
+            bool isSigned = false;
             int *map = machine_endian_short_map;
 
             if (format == 's') {
-                issigned = input[inputpos + (machine_little_endian ? 1 : 0)] & 0x80;
+                isSigned = input[inputpos + (machine_little_endian ? 1 : 0)] & 0x80;
             } else if (format == 'n') {
                 map = big_endian_short_map;
             } else if (format == 'v') {
                 map = little_endian_short_map;
             }
 
-            v = php_unpack(&input[inputpos], 2, issigned, map);
+            v = php_unpack(&input[inputpos], 2, isSigned, map);
             return static_cast<int>(v);
         }
+        case 'i':
+        case 'I':
+            long v{};
+            bool isSigned = false;
+            if (format == 'i') {
+                isSigned = input[inputpos + (machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
+            }
+            v = php_unpack(&input[inputpos], sizeof(int), isSigned, int_map);
+            return static_cast<int>(v);
+            break;
         }
 
         inputpos += size;

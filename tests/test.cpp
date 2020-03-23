@@ -62,6 +62,35 @@ TEST(Arg_n_two, Arg_n_TwoBytes)
     GTEST_ASSERT_EQ(result, expected);
 }
 
+TEST(Arg_i, Arg_i_first)
+{
+    auto s = PhPacker::pack('i', 123);
+    auto res = PhPacker::unpack('i', s);
+    EXPECT_EQ(res, 123);
+}
+
+TEST(Arg_i_two, Arg_i_Two)
+{
+    std::string str = PhPacker::pack('i', 65535123);
+    int result = PhPacker::unpack('i', str);
+    int expected = 65535123;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(Arg_I, Arg_I_first)
+{
+    auto s = PhPacker::pack('I', 123);
+    auto res = PhPacker::unpack('I', s);
+    EXPECT_EQ(res, 123);
+}
+
+TEST(Arg_I_two, Arg_I_Two)
+{
+    std::string str = PhPacker::pack('I', 655351234);
+    int result = PhPacker::unpack('I', str);
+    int expected = 655351234;
+    GTEST_ASSERT_EQ(result, expected);
+}
 int main(int argc, char *argv[])
 {
     PhPacker::init();
