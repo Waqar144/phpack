@@ -10,6 +10,8 @@ This library provides c++ alternatives to the php `pack()` and `unpack()` functi
 |S | unsigned short (always 16 bit, machine byte order)  |
 |n | unsigned short (always 16 bit, big endian byte order)  |
 |v | unsigned short (always 16 bit, little endian byte order)  |
+|i | signed integer (machine dependent size and byte order)  |
+|I | unsigned integer (machine dependent size and byte order)  |
 
 
 Note: Currently only `'v', 's', 'S', 's'` are supported. More options are being added
@@ -20,6 +22,9 @@ Note: Currently only `'v', 's', 'S', 's'` are supported. More options are being 
 #include "pack.h"
 
 using namespace PhPacker;
+
+//initialize
+init();
 
 std::string s = pack('v', 1902);
 int num = unpack('v', s);
