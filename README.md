@@ -16,6 +16,8 @@ Note: Currently only `'v'` is supported. More options are being added
 ```cpp
 #include "pack.h"
 
+using namespace PhPacker;
+
 std::string s = pack('v', 1902);
 int num = unpack('v', s);
 ```
