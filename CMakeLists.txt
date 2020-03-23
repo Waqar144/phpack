@@ -6,8 +6,8 @@ add_subdirectory(googletest)
 include_directories(googletest/include)
 
 add_executable(main main.cpp
-                        pack.h
-                        pack.cpp)
+                        src/pack.h
+                        src/pack.cpp)
 
-add_executable(packtest test.cpp pack.cpp)
+add_executable(packtest tests/test.cpp src/pack.h src/pack.cpp)
 target_link_libraries(packtest gtest)

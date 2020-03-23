@@ -1,4 +1,4 @@
-#include "pack.h"
+#include "../src/pack.h"
 #include "gtest/gtest.h"
 #include <iostream>
 
