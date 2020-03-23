@@ -1,12 +1,15 @@
 // (c) 2020 Mediapark
 // Author: Waqar Ahmed <waqar.17a@gmail.com>
 // This code is licensed under MIT license (see LICENSE for details)
+
 #include <climits>
 #include <stdint.h>
 #include <stdio.h>
 
 #include "pack.h"
 
+namespace PhPacker
+{
 #define INC_OUTPUTPOS(a, b)                                                                        \
     if ((a) < 0 || ((INT_MAX - outputpos) / ((int)b)) < (a)) {                                     \
         printf("Type %c: integer overflow in format string", code);                                \
@@ -323,3 +326,4 @@ void init()
     }
     initialized = true;
 }
+} // namespace PhPacker
