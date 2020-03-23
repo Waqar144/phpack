@@ -4,11 +4,11 @@
 
 int main()
 {
-    Initialize();
+    init();
 
     std::cout << "Trying PHP pack() in c++\n";
 
-    auto result = pack('v', 2787);
+    auto result = pack('v', 8889);
 
     std::cout << "RESULT: " << result << result << std::endl;
 

@@ -65,13 +65,12 @@ static int big_endian_longlong_map[8];
 static int little_endian_longlong_map[8];
 #endif
 
-static void php_pack(u_int32_t val, size_t size, int *map, char *output)
+static void php_pack(u_int32_t val, size_t size, int *map, std::string &output)
 {
-    char *v;
-    v = reinterpret_cast<char *>(&val);
+    char *v = reinterpret_cast<char *>(&val);
 
-    for (size_t i = 0; i < size; i++) {
-        *output++ = v[map[i]];
+    for (size_t i = 0; i < size; ++i) {
+        output.push_back(v[map[i]]);
     }
 }
 
@@ -115,26 +114,24 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
    Takes one or more arguments and packs them into a binary string according to the format argument
  * If the first ARG is a Buffer(), is that as the output instead of creating its own buffer.
  */
-std::string pack(char code, int dec)
+std::string pack(char code, int val)
 {
     int outputpos = 0, outputsize = 0;
-    int i;
-    char *output = NULL;
-    int formatcount = 1;
+    // char *output = NULL;
 
     /* Calculate output length and upper bound while processing*/
-    for (i = 0; i < formatcount; i++) {
-        switch (code) {
-        case 'v':
-            INC_OUTPUTPOS(dec, 2) /* 16 bit per arg */
-            break;
-        }
-        if (outputsize < outputpos) {
-            outputsize = outputpos;
-        }
+    switch (code) {
+    case 'v':
+        INC_OUTPUTPOS(val, 2) /* 16 bit per arg */
+        break;
     }
 
-    output = (char *)malloc(outputsize);
+    if (outputsize < outputpos) {
+        outputsize = outputpos;
+    }
+
+    // output = (char *)malloc(outputsize);
+    std::string output;
     outputpos = 0;
 
     switch (code) {
@@ -147,40 +144,37 @@ std::string pack(char code, int dec)
             map = little_endian_short_map;
         }
 
-        int val = dec;
-        php_pack(val, 2, map, &output[outputpos]);
+        php_pack(val, 2, map, output);
         outputpos += 2;
         break;
     }
     }
-    output[outputpos] = '\0';
+    // output[outputpos] = '\0';
     std::string ret{output};
-    free(output);
     return ret;
 }
 
-static long php_unpack(const char *data, int size, int issigned, int *map)
+static long php_unpack(const char *data, int size, bool issigned, int *map)
 {
     long result;
     char *cresult = reinterpret_cast<char *>(&result);
-    int i;
 
     result = issigned ? -1 : 0;
 
-    for (i = 0; i < size; i++) {
+    for (int i = 0; i < size; ++i) {
         cresult[map[i]] = *data++;
     }
 
     return result;
 }
 
-int unpack(char format, std::string data)
+int unpack(char format, const std::string &data)
 {
     const char *input = data.c_str();
-    int inputpos = 0, inputlen = 0;
+    int inputpos = 0;
     int size = 0;
 
-    inputlen = strlen(input) + 1;
+    const int inputlen = data.length();
 
     switch (format) {
     /* Never use any input */
@@ -196,7 +190,7 @@ int unpack(char format, std::string data)
         switch (format) {
         case 'v': {
             long v = 0;
-            int issigned = 0;
+            bool issigned = false;
             int *map = machine_endian_short_map;
 
             if (format == 's') {
@@ -208,8 +202,7 @@ int unpack(char format, std::string data)
             }
 
             v = php_unpack(&input[inputpos], 2, issigned, map);
-            return (int)v;
-            break;
+            return static_cast<int>(v);
         }
         }
 
@@ -223,8 +216,11 @@ int unpack(char format, std::string data)
     }
 }
 
-void Initialize()
+static bool initialized = false;
+void init()
 {
+    if (initialized)
+        return;
     int machine_endian_check = 1;
     int i;
 
@@ -341,4 +337,5 @@ void Initialize()
         little_endian_longlong_map[7] = size - 8;
 #endif
     }
+    initialized = true;
 }

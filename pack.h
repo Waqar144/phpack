@@ -6,8 +6,8 @@
 
 #include <string>
 
-void Initialize();
+void init();
 std::string pack(char format, int dec);
-int unpack(char format, std::string data);
+int unpack(char format, const std::string &data);
 
 #endif /* PACK_H */
