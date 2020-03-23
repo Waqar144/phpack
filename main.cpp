@@ -4,15 +4,15 @@
 
 int main()
 {
-    init();
+    PhPacker::init();
 
     std::cout << "Trying PHP pack() in c++\n";
 
-    auto result = pack('v', 0);
+    auto result = PhPacker::pack('n', 65535);
 
     std::cout << "RESULT: " << result << result << std::endl;
 
-    int up = unpack('v', result);
+    int up = PhPacker::unpack('n', result);
 
     std::cout << "UNPACK RESULT: " << up << std::endl;
 

@@ -110,6 +110,9 @@ std::string pack(char code, int val)
 
     /* Calculate output length and upper bound while processing*/
     switch (code) {
+    case 's':
+    case 'S':
+    case 'n':
     case 'v':
         INC_OUTPUTPOS(val, 2) /* 16 bit per arg */
         break;
@@ -124,6 +127,9 @@ std::string pack(char code, int val)
     outputpos = 0;
 
     switch (code) {
+    case 's':
+    case 'S':
+    case 'n':
     case 'v': {
         int *map = machine_endian_short_map;
 
@@ -165,6 +171,9 @@ int unpack(char format, const std::string &data)
 
     switch (format) {
     /* Never use any input */
+    case 's':
+    case 'S':
+    case 'n':
     case 'v':
         size = 2;
         break;
@@ -175,6 +184,9 @@ int unpack(char format, const std::string &data)
     /* Do actual unpacking */
     if ((inputpos + size) <= inputlen && input != NULL) {
         switch (format) {
+        case 's':
+        case 'S':
+        case 'n':
         case 'v': {
             long v = 0;
             bool issigned = false;
