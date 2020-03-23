@@ -1,23 +1,11 @@
 // (c) 2020 Mediapark
 // Author: Waqar Ahmed <waqar.17a@gmail.com>
 // This code is licensed under MIT license (see LICENSE for details)
-#include <errno.h>
-#include <fcntl.h>
+#include <climits>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#if HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
 
 #include "pack.h"
-
-#include <assert.h>
 
 #define INC_OUTPUTPOS(a, b)                                                                        \
     if ((a) < 0 || ((INT_MAX - outputpos) / ((int)b)) < (a)) {                                     \
@@ -26,8 +14,6 @@
     outputpos += (a) * (b);
 
 #define safe_emalloc(len, objsize, setwith) malloc(len *objsize)
-
-#define ToCString(value) (*value ? *value : "<string conversion failed>")
 
 #if defined(__x86_64__) || defined(__LP64__) || defined(_LP64) || defined(_WIN64)
 #define ENABLE_LONG64 1
@@ -69,6 +55,7 @@ static void php_pack(u_int32_t val, size_t size, int *map, std::string &output)
 {
     char *v = reinterpret_cast<char *>(&val);
 
+    output.reserve(size);
     for (size_t i = 0; i < size; ++i) {
         output.push_back(v[map[i]]);
     }
@@ -117,7 +104,6 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
 std::string pack(char code, int val)
 {
     int outputpos = 0, outputsize = 0;
-    // char *output = NULL;
 
     /* Calculate output length and upper bound while processing*/
     switch (code) {
@@ -149,9 +135,7 @@ std::string pack(char code, int val)
         break;
     }
     }
-    // output[outputpos] = '\0';
-    std::string ret{output};
-    return ret;
+    return output;
 }
 
 static long php_unpack(const char *data, int size, bool issigned, int *map)

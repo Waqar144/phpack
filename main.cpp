@@ -8,7 +8,7 @@ int main()
 
     std::cout << "Trying PHP pack() in c++\n";
 
-    auto result = pack('v', 8889);
+    auto result = pack('v', 0);
 
     std::cout << "RESULT: " << result << result << std::endl;
 
