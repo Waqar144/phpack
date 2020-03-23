@@ -6,10 +6,13 @@ This library provides c++ alternatives to the php `pack()` and `unpack()` functi
 
 |Code| Description  |
 |--|--|
-|v | unsigned short (little endian byte order)  |
+|s | signed short (always 16 bit, machine byte order)  |
+|S | unsigned short (always 16 bit, machine byte order)  |
+|n | unsigned short (always 16 bit, big endian byte order)  |
+|v | unsigned short (always 16 bit, little endian byte order)  |
 
 
-Note: Currently only `'v'` is supported. More options are being added
+Note: Currently only `'v', 's', 'S', 's'` are supported. More options are being added
 
 ## Usage
 
