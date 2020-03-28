@@ -2,6 +2,7 @@
 // Author: Waqar Ahmed <waqar.17a@gmail.com>
 // This code is licensed under MIT license (see LICENSE for details)
 
+#include <array>
 #include <climits>
 #include <cstdint>
 #include <cstdio>
@@ -30,26 +31,28 @@ namespace PhPacker
 static char machine_little_endian;
 
 /* Mapping of byte from char (8bit) to long for machine endian */
-static int byte_map[1];
+static std::array<int, 1> byte_map;
+// static int byte_map[1];
 
 /* Mappings of bytes from int (machine dependant) to int for machine endian */
-static int int_map[sizeof(int)];
+static std::array<int, sizeof(int)> int_map;
+// static int int_map[sizeof(int)];
 
 /* Mappings of bytes from shorts (16bit) for all endian environments */
-static int machine_endian_short_map[2];
-static int big_endian_short_map[2];
-static int little_endian_short_map[2];
+static std::array<int, 2> machine_endian_short_map;
+static std::array<int, 2> big_endian_short_map;
+static std::array<int, 2> little_endian_short_map;
 
 /* Mappings of bytes from longs (32bit) for all endian environments */
-static int machine_endian_long_map[4];
-static int big_endian_long_map[4];
-static int little_endian_long_map[4];
+static std::array<int, 4> machine_endian_long_map;
+static std::array<int, 4> big_endian_long_map;
+static std::array<int, 4> little_endian_long_map;
 
 #if SIZEOF_LONG > 4
 /* Mappings of bytes from quads (64bit) for all endian environments */
-static int machine_endian_longlong_map[8];
-static int big_endian_longlong_map[8];
-static int little_endian_longlong_map[8];
+static std::array<int, 8> machine_endian_longlong_map;
+static std::array<int, 8> big_endian_longlong_map;
+static std::array<int, 8> little_endian_longlong_map;
 #endif
 
 static void php_pack(u_int32_t val, size_t size, int *map, std::string &output)
@@ -133,12 +136,12 @@ std::string pack(char code, int val)
     case 'S':
     case 'n':
     case 'v': {
-        int *map = machine_endian_short_map;
+        auto map = machine_endian_short_map.begin();
 
         if (code == 'n') {
-            map = big_endian_short_map;
+            map = big_endian_short_map.begin();
         } else if (code == 'v') {
-            map = little_endian_short_map;
+            map = little_endian_short_map.begin();
         }
 
         php_pack(val, 2, map, output);
@@ -147,7 +150,7 @@ std::string pack(char code, int val)
     }
     case 'i':
     case 'I':
-        php_pack(val, sizeof(int), int_map, output);
+        php_pack(val, sizeof(int), int_map.begin(), output);
         break;
     }
     return output;
@@ -200,14 +203,14 @@ int unpack(char format, const std::string &data)
         case 'v': {
             long v = 0;
             bool isSigned = false;
-            int *map = machine_endian_short_map;
+            int *map = machine_endian_short_map.begin();
 
             if (format == 's') {
                 isSigned = input[inputpos + (machine_little_endian ? 1 : 0)] & 0x80;
             } else if (format == 'n') {
-                map = big_endian_short_map;
+                map = big_endian_short_map.begin();
             } else if (format == 'v') {
-                map = little_endian_short_map;
+                map = little_endian_short_map.begin();
             }
 
             v = php_unpack(&input[inputpos], 2, isSigned, map);
@@ -220,7 +223,7 @@ int unpack(char format, const std::string &data)
             if (format == 'i') {
                 isSigned = input[inputpos + (machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
             }
-            v = php_unpack(&input[inputpos], sizeof(int), isSigned, int_map);
+            v = php_unpack(&input[inputpos], sizeof(int), isSigned, int_map.begin());
             return static_cast<int>(v);
             break;
         }
@@ -249,7 +252,7 @@ void init()
         /* Where to get lo to hi bytes from */
         byte_map[0] = 0;
 
-        for (i = 0; i < (int)sizeof(int); i++) {
+        for (i = 0; i < (int)sizeof(int); ++i) {
             int_map[i] = i;
         }
 
@@ -306,7 +309,7 @@ void init()
         /* Where to get hi to lo bytes from */
         byte_map[0] = size - 1;
 
-        for (i = 0; i < (int)sizeof(int); i++) {
+        for (i = 0; i < (int)sizeof(int); ++i) {
             int_map[i] = size - (sizeof(int) - i);
         }
 
