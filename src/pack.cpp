@@ -3,8 +3,8 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include <climits>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "pack.h"
 
@@ -15,8 +15,6 @@ namespace PhPacker
         printf("Type %c: integer overflow in format string", code);                                \
     }                                                                                              \
     outputpos += (a) * (b);
-
-#define safe_emalloc(len, objsize, setwith) malloc(len *objsize)
 
 #if defined(__x86_64__) || defined(__LP64__) || defined(_LP64) || defined(_WIN64)
 #define ENABLE_LONG64 1
