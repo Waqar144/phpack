@@ -92,20 +92,13 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
     return result.i;
 }
 
-// We define a max size, since we want to avoid any mallocs() theres are on the stack and faster.
-// I think 48 is enough for 99.99% cases. Next release we might have a init option
-#define MAX_FORMAT_CODES (48)
-
-// We also store the output locally in the stack if its under 256 bytes in size, else we malloc it.
-
-/* pack() idea stolen from Perl (implemented formats behave the same as there)
- * Implemented formats are A, a, h, H, c, C, s, S, i, I, l, L, n, N, f, d, x, X, V, v, @.
+/**
+ * @brief pack
+ * @param code
+ * @param val
+ * @return string
  */
-/* {{{ proto string pack(String format, mixed arg1 [, mixed arg2 [, mixed ...]])
-   Takes one or more arguments and packs them into a binary string according to the format argument
- * If the first ARG is a Buffer(), is that as the output instead of creating its own buffer.
- */
-std::string pack(char code, int val)
+std::string pack(char code, long val)
 {
     init();
     std::string output;
@@ -163,7 +156,13 @@ static long php_unpack(const char *data, int size, bool issigned, int *map)
     return result;
 }
 
-int unpack(char format, const std::string &data)
+/**
+ * @brief unpack
+ * @param format
+ * @param data
+ * @return long
+ */
+long unpack(char format, const std::string &data)
 {
     init();
     const char *input = data.c_str();
@@ -215,7 +214,7 @@ int unpack(char format, const std::string &data)
             }
 
             v = php_unpack(&input[inputpos], 2, isSigned, map);
-            return static_cast<int>(v);
+            return v;
         }
         case 'i':
         case 'I': {

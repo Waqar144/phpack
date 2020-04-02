@@ -10,8 +10,8 @@
 namespace PhPacker
 {
 void init();
-std::string pack(char code, int dec);
-int unpack(char format, const std::string &data);
+std::string pack(char code, long val);
+long unpack(char format, const std::string &data);
 
 } // namespace PhPacker
 
