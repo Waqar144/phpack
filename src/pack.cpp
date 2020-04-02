@@ -107,29 +107,8 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
  */
 std::string pack(char code, int val)
 {
-    int outputpos = 0, outputsize = 0;
-
-    /* Calculate output length and upper bound while processing*/
-    switch (code) {
-    case 's':
-    case 'S':
-    case 'n':
-    case 'v':
-        INC_OUTPUTPOS(val, 2) /* 16 bit per arg */
-        break;
-    case 'i':
-    case 'I':
-        INC_OUTPUTPOS(val, sizeof(int))
-        break;
-    }
-
-    if (outputsize < outputpos) {
-        outputsize = outputpos;
-    }
-
-    // output = (char *)malloc(outputsize);
+    init();
     std::string output;
-    outputpos = 0;
 
     switch (code) {
     case 's':
@@ -145,13 +124,27 @@ std::string pack(char code, int val)
         }
 
         php_pack(val, 2, map, output);
-        outputpos += 2;
         break;
     }
     case 'i':
     case 'I':
         php_pack(val, sizeof(int), int_map.begin(), output);
         break;
+    case 'l':
+    case 'L':
+    case 'N':
+    case 'V': {
+        auto map = machine_endian_long_map;
+
+        if (code == 'N') {
+            map = big_endian_long_map;
+        } else if (code == 'V') {
+            map = little_endian_long_map;
+        }
+
+        php_pack(val, 4, map.begin(), output);
+        break;
+    }
     }
     return output;
 }
@@ -172,6 +165,7 @@ static long php_unpack(const char *data, int size, bool issigned, int *map)
 
 int unpack(char format, const std::string &data)
 {
+    init();
     const char *input = data.c_str();
     int inputpos = 0;
     int size = 0;
@@ -189,6 +183,13 @@ int unpack(char format, const std::string &data)
     case 'i':
     case 'I':
         size = sizeof(int);
+        break;
+    /* Use 4 bytes of input */
+    case 'l':
+    case 'L':
+    case 'N':
+    case 'V':
+        size = 4;
         break;
     default:
         break;
@@ -217,7 +218,7 @@ int unpack(char format, const std::string &data)
             return static_cast<int>(v);
         }
         case 'i':
-        case 'I':
+        case 'I': {
             long v{};
             bool isSigned = false;
             if (format == 'i') {
@@ -226,6 +227,40 @@ int unpack(char format, const std::string &data)
             v = php_unpack(&input[inputpos], sizeof(int), isSigned, int_map.begin());
             return static_cast<int>(v);
             break;
+        }
+        case 'l':
+        case 'L':
+        case 'N':
+        case 'V': {
+            bool issigned = false;
+            int *map = machine_endian_long_map.begin();
+            long v = 0;
+
+            if (format == 'l' || format == 'L') {
+                issigned = input[inputpos + (machine_little_endian ? 3 : 0)] & 0x80;
+            } else if (format == 'N') {
+                issigned = input[inputpos] & 0x80;
+                map = big_endian_long_map.begin();
+            } else if (format == 'V') {
+                issigned = input[inputpos + 3] & 0x80;
+                map = little_endian_long_map.begin();
+            }
+
+            if (SIZEOF_LONG > 4 && issigned) {
+                v = ~INT_MAX;
+            }
+
+            v |= php_unpack(&input[inputpos], 4, issigned, map);
+            if (SIZEOF_LONG > 4) {
+                if (format == 'l') {
+                    v = (signed int)v;
+                } else {
+                    v = (unsigned int)v;
+                }
+            }
+            return v;
+            break;
+        }
         }
 
         inputpos += size;
