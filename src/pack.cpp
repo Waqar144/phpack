@@ -11,12 +11,6 @@
 
 namespace PhPacker
 {
-#define INC_OUTPUTPOS(a, b)                                                                        \
-    if ((a) < 0 || ((INT_MAX - outputpos) / ((int)b)) < (a)) {                                     \
-        printf("Type %c: integer overflow in format string", code);                                \
-    }                                                                                              \
-    outputpos += (a) * (b);
-
 #if defined(__x86_64__) || defined(__LP64__) || defined(_LP64) || defined(_WIN64)
 #define ENABLE_LONG64 1
 #endif
