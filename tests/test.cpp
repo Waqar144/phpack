@@ -91,9 +91,63 @@ TEST(Arg_I_two, Arg_I_Two)
     int expected = 655351234;
     GTEST_ASSERT_EQ(result, expected);
 }
+
+TEST(Arg_l, Arg_l_first)
+{
+    auto s = PhPacker::pack('l', 123);
+    auto res = PhPacker::unpack('l', s);
+    EXPECT_EQ(res, 123);
+}
+
+TEST(Arg_l_two, Arg_l_Two)
+{
+    std::string str = PhPacker::pack('l', 655351234);
+    int result = PhPacker::unpack('l', str);
+    int expected = 655351234;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(Arg_L_two, Arg_L_Two)
+{
+    std::string str = PhPacker::pack('L', 655351234);
+    int result = PhPacker::unpack('L', str);
+    int expected = 655351234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('L', 65);
+    result = PhPacker::unpack('L', str);
+    expected = 65;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(Arg_N_two, Arg_N_Two)
+{
+    std::string str = PhPacker::pack('N', 655351234);
+    int result = PhPacker::unpack('N', str);
+    int expected = 655351234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('N', 65);
+    result = PhPacker::unpack('N', str);
+    expected = 65;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(Arg_V_two, Arg_V_Two)
+{
+    std::string str = PhPacker::pack('V', 655351234);
+    int result = PhPacker::unpack('V', str);
+    int expected = 655351234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('V', 65);
+    result = PhPacker::unpack('V', str);
+    expected = 65;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
 int main(int argc, char *argv[])
 {
-    PhPacker::init();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
