@@ -252,7 +252,6 @@ long unpack(char format, const std::string &data)
                 }
             }
             return v;
-            break;
         }
         }
 
@@ -272,7 +271,6 @@ void init()
     if (initialized)
         return;
     int machine_endian_check = 1;
-    int i;
 
     machine_little_endian = ((char *)&machine_endian_check)[0];
 
@@ -280,7 +278,7 @@ void init()
         /* Where to get lo to hi bytes from */
         byte_map[0] = 0;
 
-        for (i = 0; i < (int)sizeof(int); ++i) {
+        for (int i = 0; i < (int)sizeof(int); ++i) {
             int_map[i] = i;
         }
 
@@ -337,7 +335,7 @@ void init()
         /* Where to get hi to lo bytes from */
         byte_map[0] = size - 1;
 
-        for (i = 0; i < (int)sizeof(int); ++i) {
+        for (int i = 0; i < (int)sizeof(int); ++i) {
             int_map[i] = size - (sizeof(int) - i);
         }
 
