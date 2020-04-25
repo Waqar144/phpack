@@ -146,7 +146,59 @@ TEST(PhPacker, Arg_V)
     GTEST_ASSERT_EQ(result, expected);
 }
 
-int main(int argc, char *argv[])
+TEST(PhPacker, Arg_q)
+{
+    std::string str = PhPacker::pack('q', 65535123424);
+    long long result = PhPacker::unpack('q', str);
+    long long expected = 65535123424;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('q', 65);
+    result = PhPacker::unpack('q', str);
+    expected = 65;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_Q)
+{
+    std::string str = PhPacker::pack('Q', 65535123424);
+    unsigned long result = PhPacker::unpack('Q', str);
+    unsigned long expected = 65535123424;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('Q', 65);
+    result = PhPacker::unpack('Q', str);
+    expected = 65;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_J)
+{
+    std::string str = PhPacker::pack('J', 65535123424);
+    unsigned long result = PhPacker::unpack('J', str);
+    unsigned long expected = 65535123424;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('J', 65);
+    result = PhPacker::unpack('J', str);
+    expected = 65;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_P)
+{
+    std::string str = PhPacker::pack('P', 65535123424);
+    unsigned long result = PhPacker::unpack('P', str);
+    unsigned long expected = 65535123424;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('P', 65);
+    result = PhPacker::unpack('P', str);
+    expected = 65;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+int main(int argc, char* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
