@@ -93,7 +93,8 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
  * @param val
  * @return string
  */
-std::string pack(char code, const long val)
+template <typename T>
+std::string pack(char code, const T val)
 {
     init();
     std::string output;
@@ -148,9 +149,22 @@ std::string pack(char code, const long val)
         php_pack(val, 8, map.data(), output);
         break;
     }
+    case 'f': {
+        float v = static_cast<float>(val);
+        std::array<char, sizeof(float)> out = {};
+        memcpy(out.data(), &v, sizeof(v));
+        output.assign(out.begin(), out.end());
+        break;
+    }
     }
     return output;
 }
+
+/** Fwd instantiations of template */
+template std::string pack<double>(char code, const double val);
+template std::string pack<long>(char code, const long val);
+template std::string pack<float>(char code, const float val);
+template std::string pack<int>(char code, const int val);
 
 static long php_unpack(const char *data, int size, bool issigned, int *map)
 {
@@ -172,7 +186,8 @@ static long php_unpack(const char *data, int size, bool issigned, int *map)
  * @param data
  * @return long
  */
-long unpack(char format, const std::string &data)
+template <typename T>
+T unpack(char format, const std::string& data)
 {
     init();
     int size = 0;
@@ -205,6 +220,12 @@ long unpack(char format, const std::string &data)
         size = 8;
         break;
 #endif
+    /* Use sizeof(float) bytes of input */
+    case 'f':
+    case 'g':
+    case 'G':
+        size = sizeof(float);
+        break;
     default:
         break;
     }
@@ -305,9 +326,34 @@ long unpack(char format, const std::string &data)
             //            add_assoc_long(return_value, n, v);
         }
 #endif
+        case 'f': /* float */
+        case 'g': /* little endian float*/
+        case 'G': /* big endian float*/
+        {
+            float v {};
+
+            if (format == 'g') {
+                //                v = php_pack_parse_float(1, &input[inputpos]);
+            } else if (format == 'G') {
+                //                v = php_pack_parse_float(0, &input[inputpos]);
+            } else {
+                memcpy(&v, data.data(), sizeof(float));
+            }
+            return v;
+
+            //            add_assoc_double(return_value, n, (double)v);
+            break;
+        }
         }
     }
 }
+
+template long unpack<long>(char format, const std::string& data);
+template double unpack<double>(char format, const std::string& data);
+template float unpack<float>(char format, const std::string& data);
+template int unpack<int>(char format, const std::string& data);
+template uint32_t unpack<uint32_t>(char format, const std::string& data);
+template unsigned long unpack<unsigned long>(char format, const std::string& data);
 
 void init()
 {
