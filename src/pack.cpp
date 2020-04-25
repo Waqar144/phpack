@@ -131,6 +131,27 @@ static float php_pack_parse_float(int is_little_endian, const char* src)
     return m.f;
 }
 
+static double php_pack_parse_double(int is_little_endian, const char* src)
+{
+    union Copy64 {
+        double d;
+        uint64_t i;
+    } m;
+    memcpy(&m.i, src, sizeof(double));
+
+#ifdef WORDS_BIGENDIAN
+    if (is_little_endian) {
+        m.i = php_pack_reverse_int64(m.i);
+    }
+#else /* WORDS_BIGENDIAN */
+    if (!is_little_endian) {
+        m.i = bswap_64(m.i);
+    }
+#endif /* WORDS_BIGENDIAN */
+
+    return m.d;
+}
+
 static void php_pack_copy_float(int is_little_endian, char* dst, float f)
 {
     union Copy32 {
@@ -259,6 +280,30 @@ std::string pack(char code, const T val)
         output.assign(out.begin(), out.end());
         break;
     }
+    case 'd': {
+        double v = static_cast<double>(val);
+        std::array<char, sizeof(double)> out = {};
+        memcpy(out.data(), &v, sizeof(v));
+        output.assign(out.begin(), out.end());
+    } break;
+
+    case 'e': {
+        /* pack little endian double */
+        double v = static_cast<double>(val);
+        std::array<char, sizeof(double)> out = {};
+        php_pack_copy_double(1, out.data(), v);
+        output.assign(out.begin(), out.end());
+        break;
+    }
+
+    case 'E': {
+        /* pack big endian double */
+        double v = static_cast<double>(val);
+        std::array<char, sizeof(double)> out = {};
+        php_pack_copy_double(0, out.data(), v);
+        output.assign(out.begin(), out.end());
+        break;
+    }
     }
     return output;
 }
@@ -328,6 +373,11 @@ T unpack(char format, const std::string& data)
     case 'g':
     case 'G':
         size = sizeof(float);
+        break;
+    case 'd':
+    case 'e':
+    case 'E':
+        size = sizeof(double);
         break;
     default:
         break;
@@ -444,7 +494,22 @@ T unpack(char format, const std::string& data)
             }
             return v;
 
-            //            add_assoc_double(return_value, n, (double)v);
+            break;
+        }
+
+        case 'd': /* double */
+        case 'e': /* little endian float */
+        case 'E': /* big endian float */
+        {
+            double v;
+            if (format == 'e') {
+                v = php_pack_parse_double(1, data.data());
+            } else if (format == 'E') {
+                v = php_pack_parse_double(0, data.data());
+            } else {
+                memcpy(&v, data.data(), sizeof(double));
+            }
+            return v;
             break;
         }
         }
