@@ -198,6 +198,84 @@ TEST(PhPacker, Arg_P)
     GTEST_ASSERT_EQ(result, expected);
 }
 
+TEST(PhPacker, Arg_f)
+{
+    std::string str = PhPacker::pack('f', 1.234);
+    auto result = PhPacker::unpack<float>('f', str);
+    float expected = 1.234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('f', 65232.123);
+    result = PhPacker::unpack<float>('f', str);
+    expected = 65232.123;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_G)
+{
+    std::string str = PhPacker::pack('G', 1.234);
+    auto result = PhPacker::unpack<float>('G', str);
+    float expected = 1.234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('G', 65232.123);
+    result = PhPacker::unpack<float>('G', str);
+    expected = 65232.123;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_g)
+{
+    std::string str = PhPacker::pack('g', 1.234);
+    auto result = PhPacker::unpack<float>('g', str);
+    float expected = 1.234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('g', 65232.123);
+    result = PhPacker::unpack<float>('g', str);
+    expected = 65232.123;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_d)
+{
+    std::string str = PhPacker::pack('d', 1.234);
+    auto result = PhPacker::unpack<double>('d', str);
+    double expected = 1.234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('d', 65232.123);
+    result = PhPacker::unpack<double>('d', str);
+    expected = 65232.123;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_e)
+{
+    std::string str = PhPacker::pack('e', 1.234);
+    auto result = PhPacker::unpack<double>('e', str);
+    double expected = 1.234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('e', 652322.123);
+    result = PhPacker::unpack<double>('e', str);
+    expected = 652322.123;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_E)
+{
+    std::string str = PhPacker::pack('E', 123.234);
+    auto result = PhPacker::unpack<double>('E', str);
+    double expected = 123.234;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('E', 65232213123.123);
+    result = PhPacker::unpack<double>('E', str);
+    expected = 65232213123.123;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
 int main(int argc, char* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);

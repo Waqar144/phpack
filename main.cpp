@@ -12,11 +12,11 @@ int main()
     //    return 0;
     std::cout << "Trying PHP pack() in c++\n";
 
-    auto result = PhPacker::pack('P', 65535123424);
+    auto result = PhPacker::pack('q', 65);
 
     std::cout << "RESULT: " << result << std::endl;
 
-    unsigned long up = PhPacker::unpack('P', result);
+    auto up = PhPacker::unpack<long long>('q', result);
 
     std::cout << "UNPACK RESULT: " << up << std::endl;
 
