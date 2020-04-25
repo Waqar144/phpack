@@ -212,14 +212,19 @@ std::string pack(char code, const T val)
     case 'n':
     case 'v': {
         auto map = machine_endian_short_map.data();
+        auto v = static_cast<short>(val);
 
         if (code == 'n') {
             map = big_endian_short_map.data();
+            v = static_cast<unsigned short>(val);
         } else if (code == 'v') {
             map = little_endian_short_map.data();
+            v = static_cast<unsigned short>(val);
+        } else if (code == 'S') {
+            v = static_cast<unsigned short>(val);
         }
 
-        php_pack(val, 2, map, output);
+        php_pack(v, 2, map, output);
         break;
     }
     case 'i':
@@ -231,14 +236,19 @@ std::string pack(char code, const T val)
     case 'N':
     case 'V': {
         auto map = machine_endian_long_map;
+        long v = static_cast<long long>(val);
 
         if (code == 'N') {
             map = big_endian_long_map;
+            v = static_cast<unsigned long>(val);
         } else if (code == 'V') {
             map = little_endian_long_map;
+            v = static_cast<unsigned long>(val);
+        } else if (code == 'L') {
+            v = static_cast<unsigned long>(val);
         }
 
-        php_pack(val, 4, map.data(), output);
+        php_pack(v, 4, map.data(), output);
         break;
     }
     case 'q':
@@ -410,14 +420,15 @@ T unpack(char format, const std::string& data)
         }
         case 'i':
         case 'I': {
-            long v{};
             bool isSigned = false;
             if (format == 'i') {
                 isSigned = data[(machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
+                int v = php_unpack<int>(data.c_str(), sizeof(int), isSigned, int_map.data());
+                return v;
+            } else {
+                unsigned int v = php_unpack<unsigned int>(data.c_str(), sizeof(int), isSigned, int_map.data());
+                return v;
             }
-            v = php_unpack<int>(data.c_str(), sizeof(int), isSigned, int_map.data());
-            return static_cast<int>(v);
-            break;
         }
         case 'l':
         case 'L':
