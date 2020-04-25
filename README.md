@@ -23,6 +23,12 @@ pack("vV", 123, 3444);
 |Q | unsigned long long (always 64 bit, machine byte order) |
 |J | unsigned long long (always 64 bit, big endian byte order) |
 |P | unsigned long long (always 64 bit, little endian byte order) |
+|f | float (machine dependent size and representation) |
+|g | float (machine dependent size, little endian byte order) |
+|G | float (machine dependent size, big endian byte order) |
+|d | double (machine dependent size and representation) |
+|e | double (machine dependent size, little endian byte order) |
+|E | double (machine dependent size, big endian byte order) |
 
 ## Usage
 
@@ -32,7 +38,7 @@ pack("vV", 123, 3444);
 using namespace PhPacker;
 
 std::string s = pack('v', 1902);
-int num = unpack('v', s);
+int num = unpack<int>('v', s);
 ```
 
 ## Build
