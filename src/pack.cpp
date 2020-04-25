@@ -5,6 +5,7 @@
 #include <array>
 #include <climits>
 #include <cstdint>
+#include <string.h>
 
 #include "pack.h"
 
@@ -48,9 +49,10 @@ static std::array<int, 8> big_endian_longlong_map;
 static std::array<int, 8> little_endian_longlong_map;
 #endif
 
-static void php_pack(u_int32_t val, size_t size, int *map, std::string &output)
+template <typename T>
+static void php_pack(const T val, size_t size, int* map, std::string& output)
 {
-    char *v = reinterpret_cast<char *>(&val);
+    const char* v = reinterpret_cast<const char*>(&val);
 
     output.reserve(size);
     for (size_t i = 0; i < size; ++i) {
@@ -91,7 +93,7 @@ static inline uint64_t php_pack_reverse_int64(uint64_t arg)
  * @param val
  * @return string
  */
-std::string pack(char code, long val)
+std::string pack(char code, const long val)
 {
     init();
     std::string output;
@@ -129,6 +131,21 @@ std::string pack(char code, long val)
         }
 
         php_pack(val, 4, map.data(), output);
+        break;
+    }
+    case 'q':
+    case 'Q':
+    case 'J':
+    case 'P': {
+        auto map = machine_endian_longlong_map;
+
+        if (code == 'J') {
+            map = big_endian_longlong_map;
+        } else if (code == 'P') {
+            map = little_endian_longlong_map;
+        }
+
+        php_pack(val, 8, map.data(), output);
         break;
     }
     }
@@ -180,6 +197,14 @@ long unpack(char format, const std::string &data)
     case 'V':
         size = 4;
         break;
+#if SIZEOF_LONG > 4
+    case 'q':
+    case 'Q':
+    case 'J':
+    case 'P':
+        size = 8;
+        break;
+#endif
     default:
         break;
     }
@@ -249,6 +274,37 @@ long unpack(char format, const std::string &data)
             }
             return v;
         }
+
+#if SIZEOF_LONG > 4
+        case 'q':
+        case 'Q':
+        case 'J':
+        case 'P': {
+            int issigned = 0;
+            auto map = machine_endian_longlong_map;
+            long v = 0;
+
+            if (format == 'q' || format == 'Q') {
+                issigned = data[machine_little_endian ? 7 : 0] & 0x80;
+            } else if (format == 'J') {
+                issigned = data[0] & 0x80;
+                map = big_endian_longlong_map;
+            } else if (format == 'P') {
+                issigned = data[7] & 0x80;
+                map = little_endian_longlong_map;
+            }
+
+            v = php_unpack(data.data(), 8, issigned, map.data());
+
+            if (format == 'q') {
+                v = (long)v;
+            } else {
+                v = (unsigned long)v;
+            }
+            return v;
+            //            add_assoc_long(return_value, n, v);
+        }
+#endif
         }
     }
 }
