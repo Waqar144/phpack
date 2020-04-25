@@ -517,11 +517,15 @@ T unpack(char format, const std::string& data)
 }
 
 template long unpack<long>(char format, const std::string& data);
+template short unpack<short>(char format, const std::string& data);
+template unsigned short unpack<unsigned short>(char format, const std::string& data);
 template double unpack<double>(char format, const std::string& data);
 template float unpack<float>(char format, const std::string& data);
 template int unpack<int>(char format, const std::string& data);
 template uint32_t unpack<uint32_t>(char format, const std::string& data);
 template unsigned long unpack<unsigned long>(char format, const std::string& data);
+template unsigned long long unpack<unsigned long long>(char format, const std::string& data);
+template long long unpack<long long>(char format, const std::string& data);
 
 void init()
 {
