@@ -12,7 +12,8 @@ int main()
     //    return 0;
     std::cout << "Trying PHP pack() in c++\n";
 
-    auto result = PhPacker::pack('q', 65);
+    int x = 65;
+    auto result = PhPacker::pack('q', x);
 
     std::cout << "RESULT: " << result << std::endl;
 

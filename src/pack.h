@@ -10,7 +10,7 @@
 namespace PhPacker
 {
 void init();
-template <typename T>
+template <typename T, typename = typename std::enable_if<std::is_pod<T>::value>::type>
 std::string pack(char code, const T val);
 
 template <typename T>

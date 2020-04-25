@@ -200,7 +200,7 @@ static void php_pack_copy_double(int is_little_endian, char* dst, double d)
  * @param val
  * @return string
  */
-template <typename T>
+template <typename T, typename X>
 std::string pack(char code, const T val)
 {
     init();
