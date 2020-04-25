@@ -110,15 +110,7 @@ inline double ToDouble(int value)
     return static_cast<double>(value);
 }
 
-static inline uint32_t php_pack_reverse_int32(uint32_t arg)
-{
-    //    uint32_t result;
-    //    result =
-    //        ((arg & 0xFF) << 24) | ((arg & 0xFF00) << 8) | ((arg >> 8) & 0xFF00) | ((arg >> 24) & 0xFF);
-    return bswap_32(arg);
-}
-
-static float php_pack_parse_float(int is_little_endian, void* src)
+static float php_pack_parse_float(int is_little_endian, const char* src)
 {
     union Copy32 {
         float f;
@@ -132,24 +124,53 @@ static float php_pack_parse_float(int is_little_endian, void* src)
     }
 #else /* WORDS_BIGENDIAN */
     if (!is_little_endian) {
-        m.i = php_pack_reverse_int32(m.i);
+        m.i = bswap_32(m.i);
     }
 #endif /* WORDS_BIGENDIAN */
 
     return m.f;
 }
 
-static inline uint64_t php_pack_reverse_int64(uint64_t arg)
+static void php_pack_copy_float(int is_little_endian, char* dst, float f)
 {
-    union Swap64 {
-        uint64_t i;
-        uint32_t ul[2];
-    } tmp, result;
-    tmp.i = arg;
-    result.ul[0] = php_pack_reverse_int32(tmp.ul[1]);
-    result.ul[1] = php_pack_reverse_int32(tmp.ul[0]);
+    union Copy32 {
+        float f;
+        uint32_t i;
+    } m;
+    m.f = f;
 
-    return result.i;
+#ifdef WORDS_BIGENDIAN
+    if (is_little_endian) {
+        m.i = php_pack_reverse_int32(m.i);
+    }
+#else /* WORDS_BIGENDIAN */
+    if (!is_little_endian) {
+        m.i = bswap_32(m.i);
+    }
+#endif /* WORDS_BIGENDIAN */
+
+    memcpy(dst, &m.f, sizeof(float));
+}
+
+static void php_pack_copy_double(int is_little_endian, char* dst, double d)
+{
+    union Copy64 {
+        double d;
+        uint64_t i;
+    } m;
+    m.d = d;
+
+#ifdef WORDS_BIGENDIAN
+    if (is_little_endian) {
+        m.i = php_pack_reverse_int64(m.i);
+    }
+#else /* WORDS_BIGENDIAN */
+    if (!is_little_endian) {
+        m.i = bswap_64(m.i);
+    }
+#endif /* WORDS_BIGENDIAN */
+
+    memcpy(dst, &m.d, sizeof(double));
 }
 
 /**
@@ -218,6 +239,23 @@ std::string pack(char code, const T val)
         float v = static_cast<float>(val);
         std::array<char, sizeof(float)> out = {};
         memcpy(out.data(), &v, sizeof(v));
+        output.assign(out.begin(), out.end());
+        break;
+    }
+    case 'g': {
+        /* pack little endian float */
+        float v = static_cast<float>(val);
+        std::array<char, sizeof(float)> out = {};
+        php_pack_copy_float(1, out.data(), v);
+        output.assign(out.begin(), out.end());
+
+        break;
+    }
+    case 'G': {
+        /* pack big endian float */
+        float v = static_cast<float>(val);
+        std::array<char, sizeof(float)> out = {};
+        php_pack_copy_float(0, out.data(), v);
         output.assign(out.begin(), out.end());
         break;
     }
@@ -398,9 +436,9 @@ T unpack(char format, const std::string& data)
             float v {};
 
             if (format == 'g') {
-                //                v = php_pack_parse_float(1, &input[inputpos]);
+                v = php_pack_parse_float(1, data.data());
             } else if (format == 'G') {
-                //                v = php_pack_parse_float(0, &input[inputpos]);
+                v = php_pack_parse_float(0, data.data());
             } else {
                 memcpy(&v, data.data(), sizeof(float));
             }
