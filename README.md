@@ -19,6 +19,10 @@ pack("vV", 123, 3444);
 |L | unsigned long (always 32 bit, machine byte order) |
 |N | unsigned long (always 32 bit, big endian byte order)  |
 |V | unsigned long (always 32 bit, little endian byte order) |
+|q | signed long long (always 64 bit, machine byte order) |
+|Q | unsigned long long (always 64 bit, machine byte order) |
+|J | unsigned long long (always 64 bit, big endian byte order) |
+|P | unsigned long long (always 64 bit, little endian byte order) |
 
 ## Usage
 
