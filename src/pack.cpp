@@ -5,7 +5,6 @@
 #include <array>
 #include <climits>
 #include <cstdint>
-#include <cstdio>
 
 #include "pack.h"
 
@@ -159,10 +158,7 @@ static long php_unpack(const char *data, int size, bool issigned, int *map)
 long unpack(char format, const std::string &data)
 {
     init();
-    const char *input = data.c_str();
-    int inputpos = 0;
     int size = 0;
-
     const int inputlen = data.length();
 
     switch (format) {
@@ -189,7 +185,7 @@ long unpack(char format, const std::string &data)
     }
 
     /* Do actual unpacking */
-    if ((inputpos + size) <= inputlen) {
+    if ((size) <= inputlen) {
         switch (format) {
         case 's':
         case 'S':
@@ -200,14 +196,14 @@ long unpack(char format, const std::string &data)
             int* map = machine_endian_short_map.data();
 
             if (format == 's') {
-                isSigned = input[inputpos + (machine_little_endian ? 1 : 0)] & 0x80;
+                isSigned = data[(machine_little_endian ? 1 : 0)] & 0x80;
             } else if (format == 'n') {
                 map = big_endian_short_map.data();
             } else if (format == 'v') {
                 map = little_endian_short_map.data();
             }
 
-            v = php_unpack(&input[inputpos], 2, isSigned, map);
+            v = php_unpack(data.c_str(), 2, isSigned, map);
             return v;
         }
         case 'i':
@@ -215,9 +211,9 @@ long unpack(char format, const std::string &data)
             long v{};
             bool isSigned = false;
             if (format == 'i') {
-                isSigned = input[inputpos + (machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
+                isSigned = data[(machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
             }
-            v = php_unpack(&input[inputpos], sizeof(int), isSigned, int_map.data());
+            v = php_unpack(data.c_str(), sizeof(int), isSigned, int_map.data());
             return static_cast<int>(v);
             break;
         }
@@ -227,15 +223,15 @@ long unpack(char format, const std::string &data)
         case 'V': {
             bool issigned = false;
             int* map = machine_endian_long_map.data();
-            long v = 0;
+            long v {};
 
             if (format == 'l' || format == 'L') {
-                issigned = input[inputpos + (machine_little_endian ? 3 : 0)] & 0x80;
+                issigned = data[machine_little_endian ? 3 : 0] & 0x80;
             } else if (format == 'N') {
-                issigned = input[inputpos] & 0x80;
+                issigned = data[0] & 0x80;
                 map = big_endian_long_map.data();
             } else if (format == 'V') {
-                issigned = input[inputpos + 3] & 0x80;
+                issigned = data[3] & 0x80;
                 map = little_endian_long_map.data();
             }
 
@@ -243,7 +239,7 @@ long unpack(char format, const std::string &data)
                 v = ~INT_MAX;
             }
 
-            v |= php_unpack(&input[inputpos], 4, issigned, map);
+            v |= php_unpack(data.c_str(), 4, issigned, map);
             if (SIZEOF_LONG > 4) {
                 if (format == 'l') {
                     v = (signed int)v;
@@ -253,14 +249,6 @@ long unpack(char format, const std::string &data)
             }
             return v;
         }
-        }
-
-        inputpos += size;
-        if (inputpos < 0) {
-            if (size != -1) { /* only print warning if not working with * */
-                printf("Type %c: outside of string", format);
-            }
-            inputpos = 0;
         }
     }
 }
