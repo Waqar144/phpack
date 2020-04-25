@@ -9,6 +9,51 @@
 
 #include "pack.h"
 
+/** Byteswap */
+#ifdef _MSC_VER
+
+#include <stdlib.h>
+#define bswap_32(x) _byteswap_ulong(x)
+#define bswap_64(x) _byteswap_uint64(x)
+
+#elif defined(__APPLE__)
+
+// Mac OS X / Darwin features
+#include <libkern/OSByteOrder.h>
+#define bswap_32(x) OSSwapInt32(x)
+#define bswap_64(x) OSSwapInt64(x)
+
+#elif defined(__sun) || defined(sun)
+
+#include <sys/byteorder.h>
+#define bswap_32(x) BSWAP_32(x)
+#define bswap_64(x) BSWAP_64(x)
+
+#elif defined(__FreeBSD__)
+
+#include <sys/endian.h>
+#define bswap_32(x) bswap32(x)
+#define bswap_64(x) bswap64(x)
+
+#elif defined(__OpenBSD__)
+
+#include <sys/types.h>
+#define bswap_32(x) swap32(x)
+#define bswap_64(x) swap64(x)
+
+#elif defined(__NetBSD__)
+
+#include <machine/bswap.h>
+#include <sys/types.h>
+#if defined(__BSWAP_RENAME) && !defined(__bswap_32)
+#define bswap_32(x) bswap32(x)
+#define bswap_64(x) bswap64(x)
+#endif
+
+#else
+#include <byteswap.h>
+#endif
+
 namespace PhPacker
 {
 #if defined(__x86_64__) || defined(__LP64__) || defined(_LP64) || defined(_WIN64)
@@ -67,11 +112,31 @@ inline double ToDouble(int value)
 
 static inline uint32_t php_pack_reverse_int32(uint32_t arg)
 {
-    uint32_t result;
-    result =
-        ((arg & 0xFF) << 24) | ((arg & 0xFF00) << 8) | ((arg >> 8) & 0xFF00) | ((arg >> 24) & 0xFF);
+    //    uint32_t result;
+    //    result =
+    //        ((arg & 0xFF) << 24) | ((arg & 0xFF00) << 8) | ((arg >> 8) & 0xFF00) | ((arg >> 24) & 0xFF);
+    return bswap_32(arg);
+}
 
-    return result;
+static float php_pack_parse_float(int is_little_endian, void* src)
+{
+    union Copy32 {
+        float f;
+        uint32_t i;
+    } m;
+    memcpy(&m.i, src, sizeof(float));
+
+#ifdef WORDS_BIGENDIAN
+    if (is_little_endian) {
+        m.i = php_pack_reverse_int32(m.i);
+    }
+#else /* WORDS_BIGENDIAN */
+    if (!is_little_endian) {
+        m.i = php_pack_reverse_int32(m.i);
+    }
+#endif /* WORDS_BIGENDIAN */
+
+    return m.f;
 }
 
 static inline uint64_t php_pack_reverse_int64(uint64_t arg)
