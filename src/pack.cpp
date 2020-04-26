@@ -157,7 +157,7 @@ static double php_pack_parse_double(int is_little_endian, const char* src)
     return d;
 }
 
-static void php_pack_copy_float(int is_little_endian, char* dst, float f)
+static void php_pack_copy_float(int is_little_endian, std::array<char, sizeof(float)>& dst, float f)
 {
     char src[4] = {};
     memcpy(src, &f, sizeof(float));
@@ -174,7 +174,7 @@ static void php_pack_copy_float(int is_little_endian, char* dst, float f)
     }
 }
 
-static void php_pack_copy_double(int is_little_endian, char* dst, double d)
+static void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(double)>& dst, double d)
 {
     char src[8] = {};
     memcpy(src, &d, sizeof(double));
@@ -285,7 +285,7 @@ std::string pack(char code, const T val)
         /* pack little endian float */
         float v = static_cast<float>(val);
         std::array<char, sizeof(float)> out = {};
-        php_pack_copy_float(1, out.data(), v);
+        php_pack_copy_float(1, out, v);
         output.assign(out.begin(), out.end());
 
         break;
@@ -294,7 +294,7 @@ std::string pack(char code, const T val)
         /* pack big endian float */
         float v = static_cast<float>(val);
         std::array<char, sizeof(float)> out = {};
-        php_pack_copy_float(0, out.data(), v);
+        php_pack_copy_float(0, out, v);
         output.assign(out.begin(), out.end());
         break;
     }
@@ -309,7 +309,7 @@ std::string pack(char code, const T val)
         /* pack little endian double */
         double v = static_cast<double>(val);
         std::array<char, sizeof(double)> out = {};
-        php_pack_copy_double(1, out.data(), v);
+        php_pack_copy_double(1, out, v);
         output.assign(out.begin(), out.end());
         break;
     }
@@ -318,7 +318,7 @@ std::string pack(char code, const T val)
         /* pack big endian double */
         double v = static_cast<double>(val);
         std::array<char, sizeof(double)> out = {};
-        php_pack_copy_double(0, out.data(), v);
+        php_pack_copy_double(0, out, v);
         output.assign(out.begin(), out.end());
         break;
     }
@@ -476,28 +476,26 @@ T unpack(char format, const std::string& data)
         case 'Q':
         case 'J':
         case 'P': {
-            int issigned = 0;
+            bool isSigned = 0;
             auto map = machine_endian_longlong_map;
 
             if (format == 'q' || format == 'Q') {
-                issigned = data[machine_little_endian ? 7 : 0] & 0x80;
+                isSigned = data[machine_little_endian ? 7 : 0] & 0x80;
             } else if (format == 'J') {
-                issigned = data[0] & 0x80;
+                isSigned = data[0] & 0x80;
                 map = big_endian_longlong_map;
             } else if (format == 'P') {
-                issigned = data[7] & 0x80;
+                isSigned = data[7] & 0x80;
                 map = little_endian_longlong_map;
             }
 
-            auto v = php_unpack<long long>(data.data(), 8, issigned, map.data());
-
             if (format == 'q') {
-                v = (long)v;
+                auto v = php_unpack<int64_t>(data.data(), 8, isSigned, map.data());
+                return v;
             } else {
-                v = (unsigned long)v;
+                auto v = php_unpack<uint64_t>(data.data(), 8, isSigned, map.data());
+                return v;
             }
-            return v;
-            //            add_assoc_long(return_value, n, v);
         }
 #endif
         case 'f': /* float */
@@ -522,7 +520,7 @@ T unpack(char format, const std::string& data)
         case 'e': /* little endian float */
         case 'E': /* big endian float */
         {
-            double v;
+            double v {};
             if (format == 'e') {
                 v = php_pack_parse_double(1, data.data());
             } else if (format == 'E') {
@@ -554,14 +552,13 @@ void init()
     if (initialized)
         return;
     int machine_endian_check = 1;
-
-    machine_little_endian = ((char *)&machine_endian_check)[0];
+    machine_little_endian = reinterpret_cast<char*>(&machine_endian_check)[0];
 
     if (machine_little_endian) {
         /* Where to get lo to hi bytes from */
         byte_map[0] = 0;
 
-        for (int i = 0; i < (int)sizeof(int); ++i) {
+        for (int i = 0; i < static_cast<int>(sizeof(int)); ++i) {
             int_map[i] = i;
         }
 
