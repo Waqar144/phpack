@@ -112,86 +112,91 @@ inline double ToDouble(int value)
 
 static float php_pack_parse_float(int is_little_endian, const char* src)
 {
-    union Copy32 {
-        float f;
-        uint32_t i;
-    } m;
-    memcpy(&m.i, src, sizeof(float));
-
-#ifdef WORDS_BIGENDIAN
-    if (is_little_endian) {
-        m.i = php_pack_reverse_int32(m.i);
-    }
-#else /* WORDS_BIGENDIAN */
+    char out[4] = {};
     if (!is_little_endian) {
-        m.i = bswap_32(m.i);
+        out[0] = src[3];
+        out[1] = src[2];
+        out[2] = src[1];
+        out[3] = src[0];
+    } else {
+        out[0] = src[0];
+        out[1] = src[1];
+        out[2] = src[2];
+        out[3] = src[3];
     }
-#endif /* WORDS_BIGENDIAN */
-
-    return m.f;
+    float f {};
+    memcpy(&f, out, sizeof(float));
+    return f;
 }
 
 static double php_pack_parse_double(int is_little_endian, const char* src)
 {
-    union Copy64 {
-        double d;
-        uint64_t i;
-    } m;
-    memcpy(&m.i, src, sizeof(double));
-
-#ifdef WORDS_BIGENDIAN
-    if (is_little_endian) {
-        m.i = php_pack_reverse_int64(m.i);
-    }
-#else /* WORDS_BIGENDIAN */
+    char out[8] = {};
     if (!is_little_endian) {
-        m.i = bswap_64(m.i);
+        out[0] = src[7];
+        out[1] = src[6];
+        out[2] = src[5];
+        out[3] = src[4];
+        out[4] = src[3];
+        out[5] = src[2];
+        out[6] = src[1];
+        out[7] = src[0];
+    } else {
+        out[0] = src[0];
+        out[1] = src[1];
+        out[2] = src[2];
+        out[3] = src[3];
+        out[4] = src[4];
+        out[5] = src[5];
+        out[6] = src[6];
+        out[7] = src[7];
     }
-#endif /* WORDS_BIGENDIAN */
+    double d {};
+    memcpy(&d, out, sizeof(double));
 
-    return m.d;
+    return d;
 }
 
 static void php_pack_copy_float(int is_little_endian, char* dst, float f)
 {
-    union Copy32 {
-        float f;
-        uint32_t i;
-    } m;
-    m.f = f;
-
-#ifdef WORDS_BIGENDIAN
-    if (is_little_endian) {
-        m.i = php_pack_reverse_int32(m.i);
-    }
-#else /* WORDS_BIGENDIAN */
+    char src[4] = {};
+    memcpy(src, &f, sizeof(float));
     if (!is_little_endian) {
-        m.i = bswap_32(m.i);
+        dst[0] = src[3];
+        dst[1] = src[2];
+        dst[2] = src[1];
+        dst[3] = src[0];
+    } else {
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = src[3];
     }
-#endif /* WORDS_BIGENDIAN */
-
-    memcpy(dst, &m.f, sizeof(float));
 }
 
 static void php_pack_copy_double(int is_little_endian, char* dst, double d)
 {
-    union Copy64 {
-        double d;
-        uint64_t i;
-    } m;
-    m.d = d;
-
-#ifdef WORDS_BIGENDIAN
-    if (is_little_endian) {
-        m.i = php_pack_reverse_int64(m.i);
-    }
-#else /* WORDS_BIGENDIAN */
+    char src[8] = {};
+    memcpy(src, &d, sizeof(double));
     if (!is_little_endian) {
-        m.i = bswap_64(m.i);
+        dst[0] = src[7];
+        dst[1] = src[6];
+        dst[2] = src[5];
+        dst[3] = src[4];
+        dst[4] = src[3];
+        dst[5] = src[2];
+        dst[6] = src[1];
+        dst[7] = src[0];
+    } else {
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = src[3];
+        dst[4] = src[4];
+        dst[5] = src[5];
+        dst[6] = src[6];
+        dst[7] = src[7];
     }
-#endif /* WORDS_BIGENDIAN */
-
-    memcpy(dst, &m.d, sizeof(double));
 }
 
 /**
@@ -330,7 +335,7 @@ template std::string pack<int>(char code, const int val);
 template <typename T>
 static T php_unpack(const char* data, int size, bool issigned, int* map)
 {
-    long result;
+    long result {};
     char *cresult = reinterpret_cast<char *>(&result);
 
     result = issigned ? -1 : 0;
@@ -409,6 +414,9 @@ T unpack(char format, const std::string& data)
 
             if (format == 's') {
                 isSigned = data[(machine_little_endian ? 1 : 0)] & 0x80;
+                /* return here for signed short */
+                auto v = php_unpack<short>(data.c_str(), 2, isSigned, map);
+                return v;
             } else if (format == 'n') {
                 map = big_endian_short_map.data();
             } else if (format == 'v') {
