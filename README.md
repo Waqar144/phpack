@@ -9,6 +9,8 @@ pack("vV", 123, 3444);
 
 |Code| Description  |
 |--|--|
+|c | signed char   |
+|C | unsigned char |
 |s | signed short (always 16 bit, machine byte order)  |
 |S | unsigned short (always 16 bit, machine byte order)  |
 |n | unsigned short (always 16 bit, big endian byte order)  |
@@ -38,7 +40,7 @@ pack("vV", 123, 3444);
 using namespace PhPacker;
 
 std::string s = pack('v', 1902);
-int num = unpack<int>('v', s);
+short num = unpack<short>('v', s);
 ```
 
 ## Build
