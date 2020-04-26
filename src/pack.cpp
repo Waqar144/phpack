@@ -212,6 +212,10 @@ std::string pack(char code, const T val)
     std::string output;
 
     switch (code) {
+    case 'c':
+    case 'C':
+        php_pack(val, 1, byte_map.data(), output);
+        break;
     case 's':
     case 'S':
     case 'n':
@@ -361,6 +365,11 @@ T unpack(char format, const std::string& data)
     const int inputlen = data.length();
 
     switch (format) {
+    /* Use 1 byte of input */
+    case 'c':
+    case 'C':
+        size = 1;
+        break;
     /* Never use any input */
     case 's':
     case 'S':
@@ -405,6 +414,18 @@ T unpack(char format, const std::string& data)
     /* Do actual unpacking */
     if ((size) <= inputlen) {
         switch (format) {
+        case 'c':
+        case 'C': {
+            bool isSigned = (format == 'c') ? (data[0] & 0x80) : 0;
+            if (format == 'c') {
+                auto v = php_unpack<signed char>(data.c_str(), 1, isSigned, byte_map.data());
+                return v;
+            } else {
+                auto v = php_unpack<unsigned char>(data.c_str(), 1, isSigned, byte_map.data());
+                return v;
+            }
+            break;
+        }
         case 's':
         case 'S':
         case 'n':
@@ -535,13 +556,15 @@ T unpack(char format, const std::string& data)
     }
 }
 
-template long unpack<long>(char format, const std::string& data);
+template signed char unpack<signed char>(char format, const std::string& data);
+template unsigned char unpack<unsigned char>(char format, const std::string& data);
 template short unpack<short>(char format, const std::string& data);
 template unsigned short unpack<unsigned short>(char format, const std::string& data);
-template double unpack<double>(char format, const std::string& data);
-template float unpack<float>(char format, const std::string& data);
 template int unpack<int>(char format, const std::string& data);
 template uint32_t unpack<uint32_t>(char format, const std::string& data);
+template long unpack<long>(char format, const std::string& data);
+template double unpack<double>(char format, const std::string& data);
+template float unpack<float>(char format, const std::string& data);
 template unsigned long unpack<unsigned long>(char format, const std::string& data);
 template unsigned long long unpack<unsigned long long>(char format, const std::string& data);
 template long long unpack<long long>(char format, const std::string& data);
