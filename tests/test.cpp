@@ -276,6 +276,32 @@ TEST(PhPacker, Arg_E)
     GTEST_ASSERT_EQ(result, expected);
 }
 
+TEST(PhPacker, Arg_c)
+{
+    std::string str = PhPacker::pack('c', 12);
+    auto result = PhPacker::unpack<signed char>('c', str);
+    signed char expected = 12;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('c', -77);
+    result = PhPacker::unpack<signed char>('c', str);
+    expected = -77;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
+TEST(PhPacker, Arg_C)
+{
+    std::string str = PhPacker::pack('C', 123);
+    auto result = PhPacker::unpack<unsigned char>('C', str);
+    unsigned char expected = 123;
+    GTEST_ASSERT_EQ(result, expected);
+
+    str = PhPacker::pack('C', 200);
+    result = PhPacker::unpack<unsigned char>('C', str);
+    expected = 200;
+    GTEST_ASSERT_EQ(result, expected);
+}
+
 int main(int argc, char* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
