@@ -327,7 +327,7 @@ static void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(d
  * @param val
  * @return string
  */
-template <typename T, typename X>
+template <typename T, typename>
 std::string pack(char code, const T val) noexcept
 {
     init();
@@ -676,7 +676,7 @@ T unpack(char format, const std::string& data) noexcept
         }
         }
     }
-    return static_cast<int>(-1);
+    return static_cast<T>(-1);
 }
 
 template signed char unpack<signed char>(char format, const std::string& data) noexcept;

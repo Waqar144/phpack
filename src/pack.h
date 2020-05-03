@@ -9,12 +9,11 @@
 
 namespace PhPacker
 {
-void init();
 template <typename T, typename = typename std::enable_if<std::is_pod<T>::value>::type>
-std::string pack(char code, const T val);
+std::string pack(char code, const T val) noexcept;
 
 template <typename T>
-T unpack(char format, const std::string& data);
+T unpack(char format, const std::string& data) noexcept;
 
 } // namespace PhPacker
 
