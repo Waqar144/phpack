@@ -94,8 +94,130 @@ static std::array<int, 8> big_endian_longlong_map;
 static std::array<int, 8> little_endian_longlong_map;
 #endif
 
+static void init() noexcept
+{
+    static bool initialized = false;
+    if (initialized)
+        return;
+    int machine_endian_check = 1;
+    machine_little_endian = reinterpret_cast<char*>(&machine_endian_check)[0];
+
+    if (machine_little_endian) {
+        /* Where to get lo to hi bytes from */
+        byte_map[0] = 0;
+
+        for (int i = 0; i < static_cast<int>(sizeof(int)); ++i) {
+            int_map[i] = i;
+        }
+
+        machine_endian_short_map[0] = 0;
+        machine_endian_short_map[1] = 1;
+        big_endian_short_map[0] = 1;
+        big_endian_short_map[1] = 0;
+        little_endian_short_map[0] = 0;
+        little_endian_short_map[1] = 1;
+
+        machine_endian_long_map[0] = 0;
+        machine_endian_long_map[1] = 1;
+        machine_endian_long_map[2] = 2;
+        machine_endian_long_map[3] = 3;
+        big_endian_long_map[0] = 3;
+        big_endian_long_map[1] = 2;
+        big_endian_long_map[2] = 1;
+        big_endian_long_map[3] = 0;
+        little_endian_long_map[0] = 0;
+        little_endian_long_map[1] = 1;
+        little_endian_long_map[2] = 2;
+        little_endian_long_map[3] = 3;
+#if SIZEOF_LONG > 4
+        machine_endian_longlong_map[0] = 0;
+        machine_endian_longlong_map[1] = 1;
+        machine_endian_longlong_map[2] = 2;
+        machine_endian_longlong_map[3] = 3;
+        machine_endian_longlong_map[4] = 4;
+        machine_endian_longlong_map[5] = 5;
+        machine_endian_longlong_map[6] = 6;
+        machine_endian_longlong_map[7] = 7;
+        big_endian_longlong_map[0] = 7;
+        big_endian_longlong_map[1] = 6;
+        big_endian_longlong_map[2] = 5;
+        big_endian_longlong_map[3] = 4;
+        big_endian_longlong_map[4] = 3;
+        big_endian_longlong_map[5] = 2;
+        big_endian_longlong_map[6] = 1;
+        big_endian_longlong_map[7] = 0;
+        little_endian_longlong_map[0] = 0;
+        little_endian_longlong_map[1] = 1;
+        little_endian_longlong_map[2] = 2;
+        little_endian_longlong_map[3] = 3;
+        little_endian_longlong_map[4] = 4;
+        little_endian_longlong_map[5] = 5;
+        little_endian_longlong_map[6] = 6;
+        little_endian_longlong_map[7] = 7;
+#endif
+
+    } else {
+        int val;
+        int size = sizeof((val));
+
+        /* Where to get hi to lo bytes from */
+        byte_map[0] = size - 1;
+
+        for (int i = 0; i < (int)sizeof(int); ++i) {
+            int_map[i] = size - (sizeof(int) - i);
+        }
+
+        machine_endian_short_map[0] = size - 2;
+        machine_endian_short_map[1] = size - 1;
+        big_endian_short_map[0] = size - 2;
+        big_endian_short_map[1] = size - 1;
+        little_endian_short_map[0] = size - 1;
+        little_endian_short_map[1] = size - 2;
+
+        machine_endian_long_map[0] = size - 4;
+        machine_endian_long_map[1] = size - 3;
+        machine_endian_long_map[2] = size - 2;
+        machine_endian_long_map[3] = size - 1;
+        big_endian_long_map[0] = size - 4;
+        big_endian_long_map[1] = size - 3;
+        big_endian_long_map[2] = size - 2;
+        big_endian_long_map[3] = size - 1;
+        little_endian_long_map[0] = size - 1;
+        little_endian_long_map[1] = size - 2;
+        little_endian_long_map[2] = size - 3;
+        little_endian_long_map[3] = size - 4;
+#if SIZEOF_LONG > 4
+        machine_endian_longlong_map[0] = size - 8;
+        machine_endian_longlong_map[1] = size - 7;
+        machine_endian_longlong_map[2] = size - 6;
+        machine_endian_longlong_map[3] = size - 5;
+        machine_endian_longlong_map[4] = size - 4;
+        machine_endian_longlong_map[5] = size - 3;
+        machine_endian_longlong_map[6] = size - 2;
+        machine_endian_longlong_map[7] = size - 1;
+        big_endian_longlong_map[0] = size - 8;
+        big_endian_longlong_map[1] = size - 7;
+        big_endian_longlong_map[2] = size - 6;
+        big_endian_longlong_map[3] = size - 5;
+        big_endian_longlong_map[4] = size - 4;
+        big_endian_longlong_map[5] = size - 3;
+        big_endian_longlong_map[6] = size - 2;
+        big_endian_longlong_map[7] = size - 1;
+        little_endian_longlong_map[0] = size - 1;
+        little_endian_longlong_map[1] = size - 2;
+        little_endian_longlong_map[2] = size - 3;
+        little_endian_longlong_map[3] = size - 4;
+        little_endian_longlong_map[4] = size - 5;
+        little_endian_longlong_map[5] = size - 6;
+        little_endian_longlong_map[6] = size - 7;
+        little_endian_longlong_map[7] = size - 8;
+#endif
+    }
+    initialized = true;
+}
+
 template <typename T>
-static void php_pack(const T val, size_t size, int* map, std::string& output)
+static void php_pack(const T val, size_t size, int* map, std::string& output) noexcept
 {
     const char* v = reinterpret_cast<const char*>(&val);
 
@@ -110,7 +232,7 @@ inline double ToDouble(int value)
     return static_cast<double>(value);
 }
 
-static float php_pack_parse_float(int is_little_endian, const char* src)
+static float php_pack_parse_float(int is_little_endian, const char* src) noexcept
 {
     char out[4] = {};
     if (!is_little_endian) {
@@ -129,7 +251,7 @@ static float php_pack_parse_float(int is_little_endian, const char* src)
     return f;
 }
 
-static double php_pack_parse_double(int is_little_endian, const char* src)
+static double php_pack_parse_double(int is_little_endian, const char* src) noexcept
 {
     char out[8] = {};
     if (!is_little_endian) {
@@ -157,7 +279,7 @@ static double php_pack_parse_double(int is_little_endian, const char* src)
     return d;
 }
 
-static void php_pack_copy_float(int is_little_endian, std::array<char, sizeof(float)>& dst, float f)
+static void php_pack_copy_float(int is_little_endian, std::array<char, sizeof(float)>& dst, float f) noexcept
 {
     char src[4] = {};
     memcpy(src, &f, sizeof(float));
@@ -174,7 +296,7 @@ static void php_pack_copy_float(int is_little_endian, std::array<char, sizeof(fl
     }
 }
 
-static void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(double)>& dst, double d)
+static void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(double)>& dst, double d) noexcept
 {
     char src[8] = {};
     memcpy(src, &d, sizeof(double));
@@ -206,7 +328,7 @@ static void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(d
  * @return string
  */
 template <typename T, typename X>
-std::string pack(char code, const T val)
+std::string pack(char code, const T val) noexcept
 {
     init();
     std::string output;
@@ -331,13 +453,13 @@ std::string pack(char code, const T val)
 }
 
 /** Fwd instantiations of template */
-template std::string pack<double>(char code, const double val);
-template std::string pack<long>(char code, const long val);
-template std::string pack<float>(char code, const float val);
-template std::string pack<int>(char code, const int val);
+template std::string pack<double>(char code, const double val) noexcept;
+template std::string pack<long>(char code, const long val) noexcept;
+template std::string pack<float>(char code, const float val) noexcept;
+template std::string pack<int>(char code, const int val) noexcept;
 
 template <typename T>
-static T php_unpack(const char* data, int size, bool issigned, int* map)
+static T php_unpack(const char* data, int size, bool issigned, int* map) noexcept
 {
     long result {};
     char *cresult = reinterpret_cast<char *>(&result);
@@ -358,7 +480,7 @@ static T php_unpack(const char* data, int size, bool issigned, int* map)
  * @return long
  */
 template <typename T>
-T unpack(char format, const std::string& data)
+T unpack(char format, const std::string& data) noexcept
 {
     init();
     int size = 0;
@@ -554,140 +676,20 @@ T unpack(char format, const std::string& data)
         }
         }
     }
+    return static_cast<int>(-1);
 }
 
-template signed char unpack<signed char>(char format, const std::string& data);
-template unsigned char unpack<unsigned char>(char format, const std::string& data);
-template short unpack<short>(char format, const std::string& data);
-template unsigned short unpack<unsigned short>(char format, const std::string& data);
-template int unpack<int>(char format, const std::string& data);
-template uint32_t unpack<uint32_t>(char format, const std::string& data);
-template long unpack<long>(char format, const std::string& data);
-template double unpack<double>(char format, const std::string& data);
-template float unpack<float>(char format, const std::string& data);
-template unsigned long unpack<unsigned long>(char format, const std::string& data);
-template unsigned long long unpack<unsigned long long>(char format, const std::string& data);
-template long long unpack<long long>(char format, const std::string& data);
+template signed char unpack<signed char>(char format, const std::string& data) noexcept;
+template unsigned char unpack<unsigned char>(char format, const std::string& data) noexcept;
+template short unpack<short>(char format, const std::string& data) noexcept;
+template unsigned short unpack<unsigned short>(char format, const std::string& data) noexcept;
+template int unpack<int>(char format, const std::string& data) noexcept;
+template uint32_t unpack<uint32_t>(char format, const std::string& data) noexcept;
+template long unpack<long>(char format, const std::string& data) noexcept;
+template double unpack<double>(char format, const std::string& data) noexcept;
+template float unpack<float>(char format, const std::string& data) noexcept;
+template unsigned long unpack<unsigned long>(char format, const std::string& data) noexcept;
+template unsigned long long unpack<unsigned long long>(char format, const std::string& data) noexcept;
+template long long unpack<long long>(char format, const std::string& data) noexcept;
 
-void init()
-{
-    static bool initialized = false;
-    if (initialized)
-        return;
-    int machine_endian_check = 1;
-    machine_little_endian = reinterpret_cast<char*>(&machine_endian_check)[0];
-
-    if (machine_little_endian) {
-        /* Where to get lo to hi bytes from */
-        byte_map[0] = 0;
-
-        for (int i = 0; i < static_cast<int>(sizeof(int)); ++i) {
-            int_map[i] = i;
-        }
-
-        machine_endian_short_map[0] = 0;
-        machine_endian_short_map[1] = 1;
-        big_endian_short_map[0] = 1;
-        big_endian_short_map[1] = 0;
-        little_endian_short_map[0] = 0;
-        little_endian_short_map[1] = 1;
-
-        machine_endian_long_map[0] = 0;
-        machine_endian_long_map[1] = 1;
-        machine_endian_long_map[2] = 2;
-        machine_endian_long_map[3] = 3;
-        big_endian_long_map[0] = 3;
-        big_endian_long_map[1] = 2;
-        big_endian_long_map[2] = 1;
-        big_endian_long_map[3] = 0;
-        little_endian_long_map[0] = 0;
-        little_endian_long_map[1] = 1;
-        little_endian_long_map[2] = 2;
-        little_endian_long_map[3] = 3;
-#if SIZEOF_LONG > 4
-        machine_endian_longlong_map[0] = 0;
-        machine_endian_longlong_map[1] = 1;
-        machine_endian_longlong_map[2] = 2;
-        machine_endian_longlong_map[3] = 3;
-        machine_endian_longlong_map[4] = 4;
-        machine_endian_longlong_map[5] = 5;
-        machine_endian_longlong_map[6] = 6;
-        machine_endian_longlong_map[7] = 7;
-        big_endian_longlong_map[0] = 7;
-        big_endian_longlong_map[1] = 6;
-        big_endian_longlong_map[2] = 5;
-        big_endian_longlong_map[3] = 4;
-        big_endian_longlong_map[4] = 3;
-        big_endian_longlong_map[5] = 2;
-        big_endian_longlong_map[6] = 1;
-        big_endian_longlong_map[7] = 0;
-        little_endian_longlong_map[0] = 0;
-        little_endian_longlong_map[1] = 1;
-        little_endian_longlong_map[2] = 2;
-        little_endian_longlong_map[3] = 3;
-        little_endian_longlong_map[4] = 4;
-        little_endian_longlong_map[5] = 5;
-        little_endian_longlong_map[6] = 6;
-        little_endian_longlong_map[7] = 7;
-#endif
-
-    } else {
-        int val;
-        int size = sizeof((val));
-
-        /* Where to get hi to lo bytes from */
-        byte_map[0] = size - 1;
-
-        for (int i = 0; i < (int)sizeof(int); ++i) {
-            int_map[i] = size - (sizeof(int) - i);
-        }
-
-        machine_endian_short_map[0] = size - 2;
-        machine_endian_short_map[1] = size - 1;
-        big_endian_short_map[0] = size - 2;
-        big_endian_short_map[1] = size - 1;
-        little_endian_short_map[0] = size - 1;
-        little_endian_short_map[1] = size - 2;
-
-        machine_endian_long_map[0] = size - 4;
-        machine_endian_long_map[1] = size - 3;
-        machine_endian_long_map[2] = size - 2;
-        machine_endian_long_map[3] = size - 1;
-        big_endian_long_map[0] = size - 4;
-        big_endian_long_map[1] = size - 3;
-        big_endian_long_map[2] = size - 2;
-        big_endian_long_map[3] = size - 1;
-        little_endian_long_map[0] = size - 1;
-        little_endian_long_map[1] = size - 2;
-        little_endian_long_map[2] = size - 3;
-        little_endian_long_map[3] = size - 4;
-#if SIZEOF_LONG > 4
-        machine_endian_longlong_map[0] = size - 8;
-        machine_endian_longlong_map[1] = size - 7;
-        machine_endian_longlong_map[2] = size - 6;
-        machine_endian_longlong_map[3] = size - 5;
-        machine_endian_longlong_map[4] = size - 4;
-        machine_endian_longlong_map[5] = size - 3;
-        machine_endian_longlong_map[6] = size - 2;
-        machine_endian_longlong_map[7] = size - 1;
-        big_endian_longlong_map[0] = size - 8;
-        big_endian_longlong_map[1] = size - 7;
-        big_endian_longlong_map[2] = size - 6;
-        big_endian_longlong_map[3] = size - 5;
-        big_endian_longlong_map[4] = size - 4;
-        big_endian_longlong_map[5] = size - 3;
-        big_endian_longlong_map[6] = size - 2;
-        big_endian_longlong_map[7] = size - 1;
-        little_endian_longlong_map[0] = size - 1;
-        little_endian_longlong_map[1] = size - 2;
-        little_endian_longlong_map[2] = size - 3;
-        little_endian_longlong_map[3] = size - 4;
-        little_endian_longlong_map[4] = size - 5;
-        little_endian_longlong_map[5] = size - 6;
-        little_endian_longlong_map[6] = size - 7;
-        little_endian_longlong_map[7] = size - 8;
-#endif
-    }
-    initialized = true;
-}
 } // namespace PhPacker
