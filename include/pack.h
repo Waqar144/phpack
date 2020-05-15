@@ -2,12 +2,17 @@
 // Author: Waqar Ahmed <waqar.17a@gmail.com>
 // This code is licensed under MIT license (see LICENSE for details)
 
+#ifndef PACK_H
+#define PACK_H
+
+// (c) 2020 Mediapark
+// Author: Waqar Ahmed <waqar.17a@gmail.com>
+// This code is licensed under MIT license (see LICENSE for details)
+
 #include <array>
 #include <climits>
 #include <cstdint>
 #include <string.h>
-
-#include "pack.h"
 
 /** Byteswap */
 #ifdef _MSC_VER
@@ -94,7 +99,7 @@ static std::array<int, 8> big_endian_longlong_map;
 static std::array<int, 8> little_endian_longlong_map;
 #endif
 
-static void init() noexcept
+void init() noexcept
 {
     static bool initialized = false;
     if (initialized)
@@ -217,7 +222,7 @@ static void init() noexcept
 }
 
 template <typename T>
-static void php_pack(const T val, size_t size, int* map, std::string& output) noexcept
+void php_pack(const T val, size_t size, int* map, std::string& output) noexcept
 {
     const char* v = reinterpret_cast<const char*>(&val);
 
@@ -232,7 +237,7 @@ inline double ToDouble(int value)
     return static_cast<double>(value);
 }
 
-static float php_pack_parse_float(int is_little_endian, const char* src) noexcept
+float php_pack_parse_float(int is_little_endian, const char* src) noexcept
 {
     char out[4] = {};
     if (!is_little_endian) {
@@ -251,7 +256,7 @@ static float php_pack_parse_float(int is_little_endian, const char* src) noexcep
     return f;
 }
 
-static double php_pack_parse_double(int is_little_endian, const char* src) noexcept
+double php_pack_parse_double(int is_little_endian, const char* src) noexcept
 {
     char out[8] = {};
     if (!is_little_endian) {
@@ -279,7 +284,7 @@ static double php_pack_parse_double(int is_little_endian, const char* src) noexc
     return d;
 }
 
-static void php_pack_copy_float(int is_little_endian, std::array<char, sizeof(float)>& dst, float f) noexcept
+void php_pack_copy_float(int is_little_endian, std::array<char, sizeof(float)>& dst, float f) noexcept
 {
     char src[4] = {};
     memcpy(src, &f, sizeof(float));
@@ -296,7 +301,7 @@ static void php_pack_copy_float(int is_little_endian, std::array<char, sizeof(fl
     }
 }
 
-static void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(double)>& dst, double d) noexcept
+void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(double)>& dst, double d) noexcept
 {
     char src[8] = {};
     memcpy(src, &d, sizeof(double));
@@ -327,7 +332,8 @@ static void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(d
  * @param val
  * @return string
  */
-template <typename T, typename>
+template <typename T,
+    typename std::enable_if<std::is_pod<T>::value, int>::type = 0>
 std::string pack(char code, const T val) noexcept
 {
     init();
@@ -452,17 +458,11 @@ std::string pack(char code, const T val) noexcept
     return output;
 }
 
-/** Fwd instantiations of template */
-template std::string pack<double>(char code, const double val) noexcept;
-template std::string pack<long>(char code, const long val) noexcept;
-template std::string pack<float>(char code, const float val) noexcept;
-template std::string pack<int>(char code, const int val) noexcept;
-
 template <typename T>
-static T php_unpack(const char* data, int size, bool issigned, int* map) noexcept
+T php_unpack(const char* data, int size, bool issigned, int* map) noexcept
 {
     long result {};
-    char *cresult = reinterpret_cast<char *>(&result);
+    char* cresult = reinterpret_cast<char*>(&result);
 
     result = issigned ? -1 : 0;
 
@@ -679,17 +679,6 @@ T unpack(char format, const std::string& data) noexcept
     return static_cast<T>(-1);
 }
 
-template signed char unpack<signed char>(char format, const std::string& data) noexcept;
-template unsigned char unpack<unsigned char>(char format, const std::string& data) noexcept;
-template short unpack<short>(char format, const std::string& data) noexcept;
-template unsigned short unpack<unsigned short>(char format, const std::string& data) noexcept;
-template int unpack<int>(char format, const std::string& data) noexcept;
-template uint32_t unpack<uint32_t>(char format, const std::string& data) noexcept;
-template long unpack<long>(char format, const std::string& data) noexcept;
-template double unpack<double>(char format, const std::string& data) noexcept;
-template float unpack<float>(char format, const std::string& data) noexcept;
-template unsigned long unpack<unsigned long>(char format, const std::string& data) noexcept;
-template unsigned long long unpack<unsigned long long>(char format, const std::string& data) noexcept;
-template long long unpack<long long>(char format, const std::string& data) noexcept;
-
 } // namespace PhPacker
+
+#endif /* PACK_H */
