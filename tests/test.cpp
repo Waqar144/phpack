@@ -1,71 +1,71 @@
-#include "../src/pack.h"
+#include "../include/pack.h"
 #include "gtest/gtest.h"
 #include <iostream>
 
 TEST(PhPacker, Arg_v_singleByte)
 {
-    auto s = PhPacker::pack('v', 123);
-    auto res = PhPacker::unpack<unsigned short>('v', s);
+    auto s = PhPacker::pack<unsigned short>('v', 123);
+    unsigned short res = PhPacker::unpack<unsigned short>('v', s);
     EXPECT_EQ(res, 123);
 }
 
 TEST(PhPacker, Arg_v_TwoBytes)
 {
     std::string str = PhPacker::pack('v', 65535);
-    int result = PhPacker::unpack<unsigned short>('v', str);
-    int expected = 65535;
+    unsigned short result = PhPacker::unpack<unsigned short>('v', str);
+    unsigned short expected = 65535;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_s_singleByte)
 {
     auto s = PhPacker::pack('s', 123);
-    auto res = PhPacker::unpack<short>('s', s);
+    short res = PhPacker::unpack<short>('s', s);
     EXPECT_EQ(res, 123);
 }
 
 TEST(PhPacker, Arg_s_TwoBytes)
 {
     std::string str = PhPacker::pack('s', 655);
-    auto result = PhPacker::unpack<short>('s', str);
-    int expected = 655;
+    short result = PhPacker::unpack<short>('s', str);
+    short expected = 655;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_S_singleByte)
 {
     auto s = PhPacker::pack('S', 123);
-    auto res = PhPacker::unpack<unsigned short>('S', s);
+    unsigned short res = PhPacker::unpack<unsigned short>('S', s);
     EXPECT_EQ(res, 123);
 }
 
 TEST(PhPacker, Arg_S_TwoBytes)
 {
     std::string str = PhPacker::pack('S', 65535);
-    int result = PhPacker::unpack<unsigned short>('S', str);
-    int expected = 65535;
+    unsigned short result = PhPacker::unpack<unsigned short>('S', str);
+    unsigned short expected = 65535;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_n_singleByte)
 {
     auto s = PhPacker::pack('n', 123);
-    auto res = PhPacker::unpack<unsigned short>('n', s);
+    unsigned short res = PhPacker::unpack<unsigned short>('n', s);
     EXPECT_EQ(res, 123);
 }
 
 TEST(PhPacker, Arg_n_TwoBytes)
 {
     std::string str = PhPacker::pack('n', 65535);
-    int result = PhPacker::unpack<unsigned short>('n', str);
-    int expected = 65535;
+    unsigned short result = PhPacker::unpack<unsigned short>('n', str);
+    unsigned short expected = 65535;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_i_first)
 {
     auto s = PhPacker::pack('i', 123);
-    auto res = PhPacker::unpack<int>('i', s);
+    int res = PhPacker::unpack<int>('i', s);
     EXPECT_EQ(res, 123);
 }
 
@@ -80,38 +80,38 @@ TEST(PhPacker, Arg_i_Two)
 TEST(PhPacker, Arg_I_first)
 {
     auto s = PhPacker::pack('I', 123);
-    auto res = PhPacker::unpack<unsigned int>('I', s);
+    unsigned res = PhPacker::unpack<unsigned int>('I', s);
     EXPECT_EQ(res, 123);
 }
 
 TEST(PhPacker, Arg_I_Two)
 {
     std::string str = PhPacker::pack('I', 655351234);
-    int result = PhPacker::unpack<unsigned int>('I', str);
-    int expected = 655351234;
+    unsigned result = PhPacker::unpack<unsigned int>('I', str);
+    unsigned expected = 655351234;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_l_first)
 {
     auto s = PhPacker::pack('l', 123);
-    auto res = PhPacker::unpack<long>('l', s);
+    long res = PhPacker::unpack<long>('l', s);
     EXPECT_EQ(res, 123);
 }
 
 TEST(PhPacker, Arg_l_Two)
 {
     std::string str = PhPacker::pack('l', 655351234);
-    int result = PhPacker::unpack<long>('l', str);
-    int expected = 655351234;
+    long result = PhPacker::unpack<long>('l', str);
+    long expected = 655351234;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_L)
 {
     std::string str = PhPacker::pack('L', 655351234);
-    int result = PhPacker::unpack<unsigned long>('L', str);
-    int expected = 655351234;
+    unsigned long result = PhPacker::unpack<unsigned long>('L', str);
+    unsigned long expected = 655351234;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack('L', 65);
@@ -123,8 +123,8 @@ TEST(PhPacker, Arg_L)
 TEST(PhPacker, Arg_N)
 {
     std::string str = PhPacker::pack('N', 655351234);
-    int result = PhPacker::unpack<unsigned long>('N', str);
-    int expected = 655351234;
+    unsigned long result = PhPacker::unpack<unsigned long>('N', str);
+    unsigned long expected = 655351234;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack('N', 65);
@@ -136,8 +136,8 @@ TEST(PhPacker, Arg_N)
 TEST(PhPacker, Arg_V)
 {
     std::string str = PhPacker::pack('V', 655351234);
-    int result = PhPacker::unpack<unsigned long>('V', str);
-    int expected = 655351234;
+    unsigned long result = PhPacker::unpack<unsigned long>('V', str);
+    unsigned long expected = 655351234;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack('V', 65);
@@ -175,8 +175,8 @@ TEST(PhPacker, Arg_Q)
 TEST(PhPacker, Arg_J)
 {
     std::string str = PhPacker::pack('J', 65535123424);
-    unsigned long result = PhPacker::unpack<unsigned long long>('J', str);
-    unsigned long expected = 65535123424;
+    unsigned long long result = PhPacker::unpack<unsigned long long>('J', str);
+    unsigned long long expected = 65535123424;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack('J', 65);
@@ -188,8 +188,8 @@ TEST(PhPacker, Arg_J)
 TEST(PhPacker, Arg_P)
 {
     std::string str = PhPacker::pack('P', 65535123424);
-    unsigned long result = PhPacker::unpack<unsigned long long>('P', str);
-    unsigned long expected = 65535123424;
+    unsigned long long result = PhPacker::unpack<unsigned long long>('P', str);
+    unsigned long long expected = 65535123424;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack('P', 65);
@@ -201,7 +201,7 @@ TEST(PhPacker, Arg_P)
 TEST(PhPacker, Arg_f)
 {
     std::string str = PhPacker::pack('f', 1.234);
-    auto result = PhPacker::unpack<float>('f', str);
+    float result = PhPacker::unpack<float>('f', str);
     float expected = 1.234;
     GTEST_ASSERT_EQ(result, expected);
 
@@ -214,7 +214,7 @@ TEST(PhPacker, Arg_f)
 TEST(PhPacker, Arg_G)
 {
     std::string str = PhPacker::pack('G', 1.234);
-    auto result = PhPacker::unpack<float>('G', str);
+    float result = PhPacker::unpack<float>('G', str);
     float expected = 1.234;
     GTEST_ASSERT_EQ(result, expected);
 
@@ -227,7 +227,7 @@ TEST(PhPacker, Arg_G)
 TEST(PhPacker, Arg_g)
 {
     std::string str = PhPacker::pack('g', 1.234);
-    auto result = PhPacker::unpack<float>('g', str);
+    float result = PhPacker::unpack<float>('g', str);
     float expected = 1.234;
     GTEST_ASSERT_EQ(result, expected);
 
@@ -240,7 +240,7 @@ TEST(PhPacker, Arg_g)
 TEST(PhPacker, Arg_d)
 {
     std::string str = PhPacker::pack('d', 1.234);
-    auto result = PhPacker::unpack<double>('d', str);
+    double result = PhPacker::unpack<double>('d', str);
     double expected = 1.234;
     GTEST_ASSERT_EQ(result, expected);
 
@@ -253,7 +253,7 @@ TEST(PhPacker, Arg_d)
 TEST(PhPacker, Arg_e)
 {
     std::string str = PhPacker::pack('e', 1.234);
-    auto result = PhPacker::unpack<double>('e', str);
+    double result = PhPacker::unpack<double>('e', str);
     double expected = 1.234;
     GTEST_ASSERT_EQ(result, expected);
 
@@ -266,7 +266,7 @@ TEST(PhPacker, Arg_e)
 TEST(PhPacker, Arg_E)
 {
     std::string str = PhPacker::pack('E', 123.234);
-    auto result = PhPacker::unpack<double>('E', str);
+    double result = PhPacker::unpack<double>('E', str);
     double expected = 123.234;
     GTEST_ASSERT_EQ(result, expected);
 
@@ -279,7 +279,7 @@ TEST(PhPacker, Arg_E)
 TEST(PhPacker, Arg_c)
 {
     std::string str = PhPacker::pack('c', 12);
-    auto result = PhPacker::unpack<signed char>('c', str);
+    signed char result = PhPacker::unpack<signed char>('c', str);
     signed char expected = 12;
     GTEST_ASSERT_EQ(result, expected);
 
@@ -292,7 +292,7 @@ TEST(PhPacker, Arg_c)
 TEST(PhPacker, Arg_C)
 {
     std::string str = PhPacker::pack('C', 123);
-    auto result = PhPacker::unpack<unsigned char>('C', str);
+    unsigned char result = PhPacker::unpack<unsigned char>('C', str);
     unsigned char expected = 123;
     GTEST_ASSERT_EQ(result, expected);
 
