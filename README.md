@@ -32,6 +32,17 @@ pack("vV", 123, 3444);
 |e | double (machine dependent size, little endian byte order) |
 |E | double (machine dependent size, big endian byte order) |
 
+Following formats are not supported(yet)
+- `a`	NUL-padded string
+- `A`	SPACE-padded string
+- `h`	Hex string, low nibble first
+- `H`	Hex string, high nibble first
+- `x`	NUL byte
+- `X`	Back up one byte
+- `Z`	NUL-padded string (new in PHP 5.5)
+- `@`	NUL-fill to absolute position
+
+
 ## Usage
 
 ```cpp
