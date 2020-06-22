@@ -12,7 +12,7 @@
 #include <array>
 #include <climits>
 #include <cstdint>
-#include <string.h>
+#include <cstring>
 
 /** Byteswap */
 #ifdef _MSC_VER
