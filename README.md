@@ -50,7 +50,7 @@ Following formats are not supported(yet)
 
 using namespace PhPacker;
 
-std::string s = pack('v', 1902);
+std::string s = pack<short>('v', 1902);
 short num = unpack<short>('v', s);
 ```
 
