@@ -10,8 +10,9 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include <array>
-#include <climits>
+#include <limits>
 #include <cstdint>
+#include <string>
 #include <cstring>
 
 /** Byteswap */
@@ -349,16 +350,12 @@ std::string pack(char code, const T val) noexcept
     case 'n':
     case 'v': {
         auto map = machine_endian_short_map.data();
-        auto v = static_cast<short>(val);
+        T v = val;
 
         if (code == 'n') {
             map = big_endian_short_map.data();
-            v = static_cast<unsigned short>(val);
         } else if (code == 'v') {
             map = little_endian_short_map.data();
-            v = static_cast<unsigned short>(val);
-        } else if (code == 'S') {
-            v = static_cast<unsigned short>(val);
         }
 
         php_pack(v, 2, map, output);
@@ -373,16 +370,12 @@ std::string pack(char code, const T val) noexcept
     case 'N':
     case 'V': {
         auto map = machine_endian_long_map;
-        long v = static_cast<long long>(val);
+        T v = val;
 
         if (code == 'N') {
             map = big_endian_long_map;
-            v = static_cast<unsigned long>(val);
         } else if (code == 'V') {
             map = little_endian_long_map;
-            v = static_cast<unsigned long>(val);
-        } else if (code == 'L') {
-            v = static_cast<unsigned long>(val);
         }
 
         php_pack(v, 4, map.data(), output);
@@ -393,7 +386,7 @@ std::string pack(char code, const T val) noexcept
     case 'J':
     case 'P': {
         auto map = machine_endian_longlong_map;
-        long long v = static_cast<long long>(val);
+        T v = static_cast<long long>(val);
 
         if (code == 'J') {
             v = static_cast<unsigned long long>(val);
@@ -600,7 +593,7 @@ T unpack(char format, const std::string& data) noexcept
             }
 
             if (SIZEOF_LONG > 4 && issigned) {
-                v = ~INT_MAX;
+                v = ~std::numeric_limits<int>::max();
             }
 
             v |= php_unpack<long>(data.c_str(), 4, issigned, map);
@@ -676,6 +669,8 @@ T unpack(char format, const std::string& data) noexcept
         }
         }
     }
+    //need a better way to exit,
+    //control should never reach here ideally
     return static_cast<T>(-1);
 }
 
