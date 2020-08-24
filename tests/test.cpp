@@ -231,9 +231,9 @@ TEST(PhPacker, Arg_V)
 
 TEST(PhPacker, Arg_q)
 {
-    std::string str = PhPacker::pack<int64_t>('q', 65535123424l);
+    std::string str = PhPacker::pack<int64_t>('q', int64_t{65535123424ll});
     int64_t result = PhPacker::unpack<int64_t>('q', str);
-    int64_t expected = 65535123424;
+    int64_t expected = 65535123424ll;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<int64_t>('q', 65l);
@@ -254,12 +254,12 @@ TEST(PhPacker, Arg_q)
 
 TEST(PhPacker, Arg_Q)
 {
-    std::string str = PhPacker::pack<uint64_t>('Q', 65535123424ul);
+    std::string str = PhPacker::pack<uint64_t>('Q', 65535123424ull);
     uint64_t result = PhPacker::unpack<uint64_t>('Q', str);
-    uint64_t expected = 65535123424;
+    uint64_t expected = 65535123424ull;
     GTEST_ASSERT_EQ(result, expected);
 
-    str = PhPacker::pack<uint64_t>('Q', 65ul);
+    str = PhPacker::pack<uint64_t>('Q', 65ull);
     result = PhPacker::unpack<uint64_t>('Q', str);
     expected = 65;
     GTEST_ASSERT_EQ(result, expected);
@@ -277,12 +277,12 @@ TEST(PhPacker, Arg_Q)
 
 TEST(PhPacker, Arg_J)
 {
-    std::string str = PhPacker::pack<uint64_t>('J', 65535123424);
+    std::string str = PhPacker::pack<uint64_t>('J', 65535123424ull);
     uint64_t result = PhPacker::unpack<uint64_t>('J', str);
-    uint64_t expected = 65535123424;
+    uint64_t expected = 65535123424ull;
     GTEST_ASSERT_EQ(result, expected);
 
-    str = PhPacker::pack<uint64_t>('J', 65);
+    str = PhPacker::pack<uint64_t>('J', 65ull);
     result = PhPacker::unpack<uint64_t>('J', str);
     expected = 65;
     GTEST_ASSERT_EQ(result, expected);
@@ -300,14 +300,14 @@ TEST(PhPacker, Arg_J)
 
 TEST(PhPacker, Arg_P)
 {
-    std::string str = PhPacker::pack<uint64_t>('P', 65535123424);
+    std::string str = PhPacker::pack<uint64_t>('P', 65535123424ull);
     uint64_t result = PhPacker::unpack<uint64_t>('P', str);
-    uint64_t expected = 65535123424;
+    uint64_t expected = 65535123424ull;
     GTEST_ASSERT_EQ(result, expected);
 
-    str = PhPacker::pack<uint64_t>('P', 65);
+    str = PhPacker::pack<uint64_t>('P', 65ull);
     result = PhPacker::unpack<uint64_t>('P', str);
-    expected = 65;
+    expected = 65ull;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<uint64_t>('P', std::numeric_limits<uint64_t>::min());
