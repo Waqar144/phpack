@@ -21,17 +21,16 @@ jobs:
     - name: test
       run: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../ && make -j4 && ./packtest
       
-      build-win:
-      
-        runs-on: ${{ matrix.os }}
-        strategy:
-          matrix:
-            os: [windows-latest, windows-2016]
-      
-        steps:
-        - uses: actions/checkout@v2
-        - name: Checkout submodules
-          uses: snickerbockers/submodules-init@v4
+  build-win:
 
-        - name: tests
-          run: cmake --build build --config Debug && ./build/packtest.exe
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, windows-2016]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      uses: snickerbockers/submodules-init@v4
+    - name: tests
+      run: cmake --build build --config Debug && ./build/packtest.exe
