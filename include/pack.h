@@ -402,6 +402,7 @@ std::string pack(char code, const T val) noexcept
         php_pack(v, 4, map.data(), output);
         break;
     }
+#if SIZEOF_LONG > 4
     case 'q':
     case 'Q':
     case 'J':
@@ -420,6 +421,7 @@ std::string pack(char code, const T val) noexcept
         php_pack(v, 8, map.data(), output);
         break;
     }
+#endif
     case 'f': {
         float v = static_cast<float>(val);
         std::array<char, sizeof(float)> out = {};

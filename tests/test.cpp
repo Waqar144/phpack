@@ -6,13 +6,14 @@
 
 TEST(PhPacker, Arg_v)
 {
-    auto s = PhPacker::pack<uint16_t>('v', 123);
-    unsigned short res = PhPacker::unpack<uint16_t>('v', s);
+    uint16_t val = 123;
+    auto s = PhPacker::pack<uint16_t>('v', val);
+    uint16_t res = PhPacker::unpack<uint16_t>('v', s);
     EXPECT_EQ(res, 123);
 
     std::string str = PhPacker::pack<uint16_t>('v', std::numeric_limits<uint16_t>::max());
-    unsigned short result = PhPacker::unpack<uint16_t>('v', str);
-    unsigned short expected = std::numeric_limits<uint16_t>::max();
+    uint16_t result = PhPacker::unpack<uint16_t>('v', str);
+    uint16_t expected = std::numeric_limits<uint16_t>::max();
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<uint16_t>('v', std::numeric_limits<uint16_t>::min());
@@ -23,13 +24,14 @@ TEST(PhPacker, Arg_v)
 
 TEST(PhPacker, Arg_s)
 {
-    auto s = PhPacker::pack<short>('s', 123);
-    short res = PhPacker::unpack<short>('s', s);
+    int16_t val = 123;
+    auto s = PhPacker::pack<short>('s', val);
+    int16_t res = PhPacker::unpack<short>('s', s);
     EXPECT_EQ(res, 123);
 
-    std::string str = PhPacker::pack<short>('s', 655);
-    short result = PhPacker::unpack<short>('s', str);
-    short expected = 655;
+    std::string str = PhPacker::pack<short>('s', int16_t{655});
+    int16_t result = PhPacker::unpack<short>('s', str);
+    int16_t expected = 655;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<int16_t>('s', std::numeric_limits<int16_t>::max());
@@ -45,13 +47,13 @@ TEST(PhPacker, Arg_s)
 
 TEST(PhPacker, Arg_S)
 {
-    auto s = PhPacker::pack('S', 123);
-    unsigned short res = PhPacker::unpack<unsigned short>('S', s);
+    auto s = PhPacker::pack('S', uint16_t{123});
+    uint16_t res = PhPacker::unpack<uint16_t>('S', s);
     EXPECT_EQ(res, 123);
 
-    std::string str = PhPacker::pack('S', 65535);
-    unsigned short result = PhPacker::unpack<unsigned short>('S', str);
-    unsigned short expected = 65535;
+    std::string str = PhPacker::pack('S', uint16_t{65535});
+    uint16_t result = PhPacker::unpack<uint16_t>('S', str);
+    uint16_t expected = 65535;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<uint16_t>('S', std::numeric_limits<uint16_t>::max());
@@ -67,13 +69,13 @@ TEST(PhPacker, Arg_S)
 
 TEST(PhPacker, Arg_n)
 {
-    auto s = PhPacker::pack('n', 123);
-    unsigned short res = PhPacker::unpack<unsigned short>('n', s);
+    auto s = PhPacker::pack('n', uint16_t{123});
+    uint16_t res = PhPacker::unpack<uint16_t>('n', s);
     EXPECT_EQ(res, 123);
 
-    std::string str = PhPacker::pack('n', 65535);
-    unsigned short result = PhPacker::unpack<unsigned short>('n', str);
-    unsigned short expected = 65535;
+    std::string str = PhPacker::pack('n', uint16_t{65535});
+    uint16_t result = PhPacker::unpack<uint16_t>('n', str);
+    uint16_t expected = 65535;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<uint16_t>('n', std::numeric_limits<uint16_t>::max());
@@ -111,13 +113,13 @@ TEST(PhPacker, Arg_i)
 
 TEST(PhPacker, Arg_I)
 {
-    auto s = PhPacker::pack('I', 123);
-    unsigned res = PhPacker::unpack<unsigned int>('I', s);
+    auto s = PhPacker::pack('I', 123u);
+    uint32_t res = PhPacker::unpack<uint32_t>('I', s);
     EXPECT_EQ(res, 123);
 
-    std::string str = PhPacker::pack('I', 655351234);
-    unsigned result = PhPacker::unpack<unsigned int>('I', str);
-    unsigned expected = 655351234;
+    std::string str = PhPacker::pack('I', 655351234u);
+    uint32_t result = PhPacker::unpack<uint32_t>('I', str);
+    uint32_t expected = 655351234u;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<uint32_t>('I', std::numeric_limits<uint32_t>::max());
@@ -135,12 +137,12 @@ TEST(PhPacker, Arg_I)
 TEST(PhPacker, Arg_l_first)
 {
     auto s = PhPacker::pack<int32_t>('l', 123);
-    long res = PhPacker::unpack<int32_t>('l', s);
+    int32_t res = PhPacker::unpack<int32_t>('l', s);
     EXPECT_EQ(res, 123);
 
     std::string str = PhPacker::pack<int32_t>('l', 655351234l);
-    long result = PhPacker::unpack<int32_t>('l', str);
-    long expected = 655351234l;
+    int32_t result = PhPacker::unpack<int32_t>('l', str);
+    int32_t expected = 655351234l;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<int32_t>('l', std::numeric_limits<int32_t>::max());
@@ -158,8 +160,8 @@ TEST(PhPacker, Arg_l_first)
 TEST(PhPacker, Arg_L)
 {
     std::string str = PhPacker::pack<uint32_t>('L', 655351234);
-    unsigned long result = PhPacker::unpack<uint32_t>('L', str);
-    unsigned long expected = 655351234;
+    size_t result = PhPacker::unpack<uint32_t>('L', str);
+    size_t expected = 655351234;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<uint32_t>('L', 65);
@@ -253,8 +255,8 @@ TEST(PhPacker, Arg_q)
 TEST(PhPacker, Arg_Q)
 {
     std::string str = PhPacker::pack<uint64_t>('Q', 65535123424ul);
-    unsigned long result = PhPacker::unpack<uint64_t>('Q', str);
-    unsigned long expected = 65535123424;
+    uint64_t result = PhPacker::unpack<uint64_t>('Q', str);
+    uint64_t expected = 65535123424;
     GTEST_ASSERT_EQ(result, expected);
 
     str = PhPacker::pack<uint64_t>('Q', 65ul);
