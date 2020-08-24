@@ -33,7 +33,7 @@ jobs:
     - name: Checkout submodules
       uses: snickerbockers/submodules-init@v4
     - name: configure
-      run: mkdir build && cd build && cmake ..
+      run: mkdir build && cd build && cmake -DCMAKE_GENERATOR_PLATFORM=x64 ..
     - name: tests
       run: cmake --build build --config Debug && ls
     - name: run_tests
