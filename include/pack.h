@@ -412,7 +412,7 @@ std::string pack(char code, const T val) noexcept
     case 'Q':
     case 'J':
     case 'P': {
-        uint64_t v{val};
+        uint64_t v = val;
         auto map = machine_endian_longlong_map;
         if (code == 'J') {
             v = static_cast<uint64_t>(val);
