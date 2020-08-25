@@ -134,7 +134,7 @@ void init() noexcept
         byte_map[0] = 0;
 
         for (int i = 0; i < static_cast<int>(sizeof(int)); ++i) {
-            int_map[i] = i;
+            int_map[static_cast<size_t>(i)] = i;
         }
 
         machine_endian_short_map[0] = 0;
@@ -190,8 +190,8 @@ void init() noexcept
         /* Where to get hi to lo bytes from */
         byte_map[0] = size - 1;
 
-        for (int i = 0; i < (int)sizeof(int); ++i) {
-            int_map[i] = size - (sizeof(int) - i);
+        for (int i = 0; i < static_cast<int>(sizeof(int)); ++i) {
+            int_map[static_cast<size_t>(i)] = size - (size - i);
         }
 
         machine_endian_short_map[0] = size - 2;
@@ -403,18 +403,22 @@ std::string pack(char code, const T val) noexcept
         break;
     }
 #if SIZEOF_LONG > 4
-    case 'q':
+    case 'q': {
+        int64_t v = static_cast<int64_t>(val);
+        auto map = machine_endian_longlong_map;
+        php_pack(v, 8, map.data(), output);
+        break;
+    }
     case 'Q':
     case 'J':
     case 'P': {
+        uint64_t v{val};
         auto map = machine_endian_longlong_map;
-        T v = static_cast<long long>(val);
-
         if (code == 'J') {
-            v = static_cast<unsigned long long>(val);
+            v = static_cast<uint64_t>(val);
             map = big_endian_longlong_map;
         } else if (code == 'P') {
-            v = static_cast<unsigned long long>(val);
+            v = static_cast<uint64_t>(val);
             map = little_endian_longlong_map;
         }
 
@@ -499,8 +503,8 @@ template <typename T>
 T unpack(char format, const std::string& data) noexcept
 {
     init();
-    int size = 0;
-    const int inputlen = data.length();
+    size_t size = 0;
+    const auto inputlen = data.length();
 
     switch (format) {
     /* Use 1 byte of input */
@@ -556,10 +560,10 @@ T unpack(char format, const std::string& data) noexcept
         case 'C': {
             bool isSigned = (format == 'c') ? (data[0] & 0x80) : 0;
             if (format == 'c') {
-                auto v = php_unpack<signed char>(data.c_str(), 1, isSigned, byte_map.data());
+                signed char v = php_unpack<signed char>(data.c_str(), 1, isSigned, byte_map.data());
                 return v;
             } else {
-                auto v = php_unpack<unsigned char>(data.c_str(), 1, isSigned, byte_map.data());
+                unsigned char v = php_unpack<unsigned char>(data.c_str(), 1, isSigned, byte_map.data());
                 return v;
             }
             break;
@@ -597,15 +601,27 @@ T unpack(char format, const std::string& data) noexcept
                 return v;
             }
         }
-        case 'l':
+        case 'l': {
+            int32_t v{};
+            int *map = machine_endian_long_map.data();
+            bool isSigned = data[machine_little_endian ? 3 : 0] & 0x80;
+            if (SIZEOF_LONG > 4 && isSigned) {
+                v = ~std::numeric_limits<int>::max();
+            }
+            v |= php_unpack<int32_t>(data.c_str(), 4, isSigned, map);
+            if (SIZEOF_LONG > 4) {
+                return static_cast<signed long>(v);
+            }
+            return v;
+        }
         case 'L':
         case 'N':
         case 'V': {
             bool issigned = false;
             int* map = machine_endian_long_map.data();
-            long v {};
+            uint32_t v {};
 
-            if (format == 'l' || format == 'L') {
+            if (format == 'L') {
                 issigned = data[machine_little_endian ? 3 : 0] & 0x80;
             } else if (format == 'N') {
                 issigned = data[0] & 0x80;
@@ -621,11 +637,7 @@ T unpack(char format, const std::string& data) noexcept
 
             v |= php_unpack<long>(data.c_str(), 4, issigned, map);
             if (SIZEOF_LONG > 4) {
-                if (format == 'l') {
-                    v = (signed long)v;
-                } else {
-                    v = (unsigned long)v;
-                }
+                return static_cast<unsigned long>(v);
             }
             return v;
         }

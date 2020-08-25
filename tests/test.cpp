@@ -323,40 +323,40 @@ TEST(PhPacker, Arg_P)
 
 TEST(PhPacker, Arg_f)
 {
-    std::string str = PhPacker::pack<float>('f', 1.234);
+    std::string str = PhPacker::pack<float>('f', 1.234f);
     float result = PhPacker::unpack<float>('f', str);
-    float expected = 1.234;
+    float expected = 1.234f;
     GTEST_ASSERT_EQ(result, expected);
 
-    str = PhPacker::pack<float>('f', 65232.123);
+    str = PhPacker::pack<float>('f', 65232.123f);
     result = PhPacker::unpack<float>('f', str);
-    expected = 65232.123;
+    expected = 65232.123f;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_G)
 {
-    std::string str = PhPacker::pack<float>('G', 1.234);
+    std::string str = PhPacker::pack<float>('G', 1.234f);
     float result = PhPacker::unpack<float>('G', str);
-    float expected = 1.234;
+    float expected = 1.234f;
     GTEST_ASSERT_EQ(result, expected);
 
-    str = PhPacker::pack<float>('G', 65232.123);
+    str = PhPacker::pack<float>('G', 65232.123f);
     result = PhPacker::unpack<float>('G', str);
-    expected = 65232.123;
+    expected = 65232.123f;
     GTEST_ASSERT_EQ(result, expected);
 }
 
 TEST(PhPacker, Arg_g)
 {
-    std::string str = PhPacker::pack<float>('g', 1.234);
+    std::string str = PhPacker::pack<float>('g', 1.234f);
     float result = PhPacker::unpack<float>('g', str);
-    float expected = 1.234;
+    float expected = 1.234f;
     GTEST_ASSERT_EQ(result, expected);
 
-    str = PhPacker::pack<float>('g', 65232.123);
+    str = PhPacker::pack<float>('g', 65232.123f);
     result = PhPacker::unpack<float>('g', str);
-    expected = 65232.123;
+    expected = 65232.123f;
     GTEST_ASSERT_EQ(result, expected);
 }
 
