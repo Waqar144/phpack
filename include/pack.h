@@ -243,15 +243,21 @@ void init() noexcept
     initialized = true;
 }
 
-template <typename T>
-void php_pack(const T val, size_t size, int* map, std::string& output) noexcept
-{
-    const char* v = reinterpret_cast<const char*>(&val);
+namespace __detail {
 
+void php_pack_impl(const char* v, size_t size, int* map, std::string& output) noexcept
+{
     output.reserve(size);
     for (size_t i = 0; i < size; ++i) {
         output.push_back(v[map[i]]);
     }
+}
+
+template <typename T>
+void php_pack(const T val, size_t size, int* map, std::string& output) noexcept
+{
+    const char* v = reinterpret_cast<const char*>(&val);
+    php_pack_impl(v, size, map, output);
 }
 
 inline double ToDouble(int value)
@@ -348,6 +354,8 @@ void php_pack_copy_double(int is_little_endian, std::array<char, sizeof(double)>
     }
 }
 
+}
+
 /**
  * @brief pack
  * @param code
@@ -364,7 +372,7 @@ std::string pack(char code, const T val) noexcept
     switch (code) {
     case 'c':
     case 'C':
-        php_pack(val, 1, byte_map.data(), output);
+        __detail::php_pack(val, 1, byte_map.data(), output);
         break;
     case 's':
     case 'S':
@@ -379,12 +387,12 @@ std::string pack(char code, const T val) noexcept
             map = little_endian_short_map.data();
         }
 
-        php_pack(v, 2, map, output);
+        __detail::php_pack(v, 2, map, output);
         break;
     }
     case 'i':
     case 'I':
-        php_pack(val, sizeof(int), int_map.data(), output);
+        __detail::php_pack(val, sizeof(int), int_map.data(), output);
         break;
     case 'l':
     case 'L':
@@ -399,20 +407,20 @@ std::string pack(char code, const T val) noexcept
             map = little_endian_long_map;
         }
 
-        php_pack(v, 4, map.data(), output);
+        __detail::php_pack(v, 4, map.data(), output);
         break;
     }
 #if SIZEOF_LONG > 4
     case 'q': {
         int64_t v = static_cast<int64_t>(val);
         auto map = machine_endian_longlong_map;
-        php_pack(v, 8, map.data(), output);
+        __detail::php_pack(v, 8, map.data(), output);
         break;
     }
     case 'Q':
     case 'J':
     case 'P': {
-        uint64_t v = val;
+        uint64_t v = static_cast<uint64_t>(val);
         auto map = machine_endian_longlong_map;
         if (code == 'J') {
             v = static_cast<uint64_t>(val);
@@ -422,7 +430,7 @@ std::string pack(char code, const T val) noexcept
             map = little_endian_longlong_map;
         }
 
-        php_pack(v, 8, map.data(), output);
+        __detail::php_pack(v, 8, map.data(), output);
         break;
     }
 #endif
@@ -437,7 +445,7 @@ std::string pack(char code, const T val) noexcept
         /* pack little endian float */
         float v = static_cast<float>(val);
         std::array<char, sizeof(float)> out = {};
-        php_pack_copy_float(1, out, v);
+        __detail::php_pack_copy_float(1, out, v);
         output.assign(out.begin(), out.end());
 
         break;
@@ -446,7 +454,7 @@ std::string pack(char code, const T val) noexcept
         /* pack big endian float */
         float v = static_cast<float>(val);
         std::array<char, sizeof(float)> out = {};
-        php_pack_copy_float(0, out, v);
+        __detail::php_pack_copy_float(0, out, v);
         output.assign(out.begin(), out.end());
         break;
     }
@@ -461,7 +469,7 @@ std::string pack(char code, const T val) noexcept
         /* pack little endian double */
         double v = static_cast<double>(val);
         std::array<char, sizeof(double)> out = {};
-        php_pack_copy_double(1, out, v);
+        __detail::php_pack_copy_double(1, out, v);
         output.assign(out.begin(), out.end());
         break;
     }
@@ -470,7 +478,7 @@ std::string pack(char code, const T val) noexcept
         /* pack big endian double */
         double v = static_cast<double>(val);
         std::array<char, sizeof(double)> out = {};
-        php_pack_copy_double(0, out, v);
+        __detail::php_pack_copy_double(0, out, v);
         output.assign(out.begin(), out.end());
         break;
     }
@@ -478,8 +486,9 @@ std::string pack(char code, const T val) noexcept
     return output;
 }
 
-template <typename T>
-T php_unpack(const char* data, int size, bool issigned, int* map) noexcept
+namespace __detail {
+
+long php_unpack_impl(const char* data, int size, bool issigned, int* map) noexcept
 {
     long result {};
     char* cresult = reinterpret_cast<char*>(&result);
@@ -489,8 +498,17 @@ T php_unpack(const char* data, int size, bool issigned, int* map) noexcept
     for (int i = 0; i < size; ++i) {
         cresult[map[i]] = *data++;
     }
-
     return result;
+}
+
+
+template <typename T>
+T php_unpack(const char* data, int size, bool issigned, int* map) noexcept
+{
+    long result = php_unpack_impl(data, size, issigned, map);
+    return static_cast<T>(result);
+}
+
 }
 
 /**
@@ -503,67 +521,17 @@ template <typename T>
 T unpack(char format, const std::string& data) noexcept
 {
     init();
-    size_t size = 0;
-    const auto inputlen = data.length();
-
-    switch (format) {
-    /* Use 1 byte of input */
-    case 'c':
-    case 'C':
-        size = 1;
-        break;
-    /* Never use any input */
-    case 's':
-    case 'S':
-    case 'n':
-    case 'v':
-        size = 2;
-        break;
-    case 'i':
-    case 'I':
-        size = sizeof(int);
-        break;
-    /* Use 4 bytes of input */
-    case 'l':
-    case 'L':
-    case 'N':
-    case 'V':
-        size = 4;
-        break;
-#if SIZEOF_LONG > 4
-    case 'q':
-    case 'Q':
-    case 'J':
-    case 'P':
-        size = 8;
-        break;
-#endif
-    /* Use sizeof(float) bytes of input */
-    case 'f':
-    case 'g':
-    case 'G':
-        size = sizeof(float);
-        break;
-    case 'd':
-    case 'e':
-    case 'E':
-        size = sizeof(double);
-        break;
-    default:
-        break;
-    }
 
     /* Do actual unpacking */
-    if ((size) <= inputlen) {
         switch (format) {
         case 'c':
         case 'C': {
             bool isSigned = (format == 'c') ? (data[0] & 0x80) : 0;
             if (format == 'c') {
-                signed char v = php_unpack<signed char>(data.c_str(), 1, isSigned, byte_map.data());
-                return v;
+                signed char v = __detail::php_unpack<signed char>(data.c_str(), 1, isSigned, byte_map.data());
+                return static_cast<T>(v);
             } else {
-                unsigned char v = php_unpack<unsigned char>(data.c_str(), 1, isSigned, byte_map.data());
+                unsigned char v = __detail::php_unpack<unsigned char>(data.c_str(), 1, isSigned, byte_map.data());
                 return v;
             }
             break;
@@ -578,7 +546,7 @@ T unpack(char format, const std::string& data) noexcept
             if (format == 's') {
                 isSigned = data[(machine_little_endian ? 1 : 0)] & 0x80;
                 /* return here for signed short */
-                auto v = php_unpack<short>(data.c_str(), 2, isSigned, map);
+                auto v = __detail::php_unpack<short>(data.c_str(), 2, isSigned, map);
                 return v;
             } else if (format == 'n') {
                 map = big_endian_short_map.data();
@@ -586,7 +554,7 @@ T unpack(char format, const std::string& data) noexcept
                 map = little_endian_short_map.data();
             }
 
-            auto v = php_unpack<unsigned short>(data.c_str(), 2, isSigned, map);
+            auto v = __detail::php_unpack<unsigned short>(data.c_str(), 2, isSigned, map);
             return v;
         }
         case 'i':
@@ -594,10 +562,10 @@ T unpack(char format, const std::string& data) noexcept
             bool isSigned = false;
             if (format == 'i') {
                 isSigned = data[(machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
-                int v = php_unpack<int>(data.c_str(), sizeof(int), isSigned, int_map.data());
+                int v = __detail::php_unpack<int>(data.c_str(), sizeof(int), isSigned, int_map.data());
                 return v;
             } else {
-                unsigned int v = php_unpack<unsigned int>(data.c_str(), sizeof(int), isSigned, int_map.data());
+                unsigned int v = __detail::php_unpack<unsigned int>(data.c_str(), sizeof(int), isSigned, int_map.data());
                 return v;
             }
         }
@@ -608,7 +576,7 @@ T unpack(char format, const std::string& data) noexcept
             if (SIZEOF_LONG > 4 && isSigned) {
                 v = ~std::numeric_limits<int>::max();
             }
-            v |= php_unpack<int32_t>(data.c_str(), 4, isSigned, map);
+            v |= __detail::php_unpack<int32_t>(data.c_str(), 4, isSigned, map);
             if (SIZEOF_LONG > 4) {
                 return static_cast<signed long>(v);
             }
@@ -635,7 +603,7 @@ T unpack(char format, const std::string& data) noexcept
                 v = ~std::numeric_limits<int>::max();
             }
 
-            v |= php_unpack<long>(data.c_str(), 4, issigned, map);
+            v |= __detail::php_unpack<long>(data.c_str(), 4, issigned, map);
             if (SIZEOF_LONG > 4) {
                 return static_cast<unsigned long>(v);
             }
@@ -661,10 +629,10 @@ T unpack(char format, const std::string& data) noexcept
             }
 
             if (format == 'q') {
-                auto v = php_unpack<int64_t>(data.data(), 8, isSigned, map.data());
+                auto v = __detail::php_unpack<int64_t>(data.data(), 8, isSigned, map.data());
                 return v;
             } else {
-                auto v = php_unpack<uint64_t>(data.data(), 8, isSigned, map.data());
+                auto v = __detail::php_unpack<uint64_t>(data.data(), 8, isSigned, map.data());
                 return v;
             }
         }
@@ -676,9 +644,9 @@ T unpack(char format, const std::string& data) noexcept
             float v {};
 
             if (format == 'g') {
-                v = php_pack_parse_float(1, data.data());
+                v = __detail::php_pack_parse_float(1, data.data());
             } else if (format == 'G') {
-                v = php_pack_parse_float(0, data.data());
+                v = __detail::php_pack_parse_float(0, data.data());
             } else {
                 memcpy(&v, data.data(), sizeof(float));
             }
@@ -693,15 +661,14 @@ T unpack(char format, const std::string& data) noexcept
         {
             double v {};
             if (format == 'e') {
-                v = php_pack_parse_double(1, data.data());
+                v = __detail::php_pack_parse_double(1, data.data());
             } else if (format == 'E') {
-                v = php_pack_parse_double(0, data.data());
+                v = __detail::php_pack_parse_double(0, data.data());
             } else {
                 memcpy(&v, data.data(), sizeof(double));
             }
             return v;
             break;
-        }
         }
     }
     //need a better way to exit,
