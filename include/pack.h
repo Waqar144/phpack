@@ -44,7 +44,7 @@ namespace PhPacker
  * @return string
  */
 template <typename T,
-    typename std::enable_if<std::is_pod<T>::value, int>::type = 0>
+    typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0>
 std::string pack(char code, const T val) noexcept
 {
     using namespace __phpack__detail;
@@ -167,37 +167,17 @@ T unpack(char format, const std::string& data) noexcept
     /* Do actual unpacking */
         switch (format) {
         case 'c':
+            return unpack_signed_char(data.c_str());
         case 'C': {
-            bool isSigned = (format == 'c') ? (data[0] & 0x80) : 0;
-            if (format == 'c') {
-                signed char v = php_unpack<signed char>(data.c_str(), 1, isSigned, byte_map.data());
-                return static_cast<T>(v);
-            } else {
-                unsigned char v = php_unpack<unsigned char>(data.c_str(), 1, isSigned, byte_map.data());
-                return v;
-            }
-            break;
+            return php_unpack<unsigned char>(data.c_str(), 1, false, byte_map.data());
         }
         case 's':
+            return static_cast<T>( unpack_signed_short(data.c_str()) );
         case 'S':
         case 'n':
         case 'v': {
-            bool isSigned = false;
-            int* map = machine_endian_short_map.data();
-
-            if (format == 's') {
-                isSigned = data[(machine_little_endian ? 1 : 0)] & 0x80;
-                /* return here for signed short */
-                auto v = php_unpack<short>(data.c_str(), 2, isSigned, map);
-                return v;
-            } else if (format == 'n') {
-                map = big_endian_short_map.data();
-            } else if (format == 'v') {
-                map = little_endian_short_map.data();
-            }
-
-            auto v = php_unpack<unsigned short>(data.c_str(), 2, isSigned, map);
-            return v;
+            int* map = get_unsigned_short_map(format);
+            return static_cast<T>(php_unpack<unsigned short>(data.c_str(), 2, false, map));
         }
         case 'i':
         case 'I': {
@@ -310,7 +290,6 @@ T unpack(char format, const std::string& data) noexcept
                 memcpy(&v, data.data(), sizeof(double));
             }
             return v;
-            break;
         }
     }
     //need a better way to exit,

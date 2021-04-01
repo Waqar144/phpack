@@ -283,9 +283,9 @@ void php_pack_copy_double(int is_little_endian, double d, std::string& output) n
     output.assign(dst.begin(), dst.end());
 }
 
-long php_unpack_impl(const char* data, int size, bool issigned, int* map) noexcept
+int64_t php_unpack_impl(const char* data, int size, bool issigned, int* map) noexcept
 {
-    long result {};
+    int64_t result {};
     char* cresult = reinterpret_cast<char*>(&result);
 
     result = issigned ? -1 : 0;
@@ -300,7 +300,7 @@ long php_unpack_impl(const char* data, int size, bool issigned, int* map) noexce
 template <typename T>
 T php_unpack(const char* data, int size, bool issigned, int* map) noexcept
 {
-    long result = php_unpack_impl(data, size, issigned, map);
+    int64_t result = php_unpack_impl(data, size, issigned, map);
     return static_cast<T>(result);
 }
 
@@ -316,6 +316,32 @@ void php_pack_machine_dependent_copy_double(double val, std::string& output)
     std::array<char, sizeof(double)> out = {};
     memcpy(out.data(), &val, sizeof(val));
     output.assign(out.begin(), out.end());
+}
+
+/** Unapacking **/
+inline signed char unpack_signed_char(const char* data)
+{
+    bool isSigned = (data[0] & 0x80);
+    signed char v = php_unpack<signed char>(data, 1, isSigned, byte_map.data());
+    return v;
+}
+
+inline short unpack_signed_short(const char* data)
+{
+    bool isSigned = data[(machine_little_endian ? 1 : 0)] & 0x80;
+    /* return here for signed short */
+    return php_unpack<short>(data, 2, isSigned, machine_endian_short_map.data());
+}
+
+inline int* get_unsigned_short_map(char format)
+{
+    int* map = machine_endian_short_map.data();
+    if (format == 'n') {
+        map = big_endian_short_map.data();
+    } else if (format == 'v') {
+        map = little_endian_short_map.data();
+    }
+    return map;
 }
 
 

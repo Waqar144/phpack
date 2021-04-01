@@ -36,5 +36,5 @@ jobs:
       run: mkdir build && cd build && cmake -DCMAKE_GENERATOR_PLATFORM=x64 ..
     - name: tests
       run: cmake --build build --config Debug
-    #- name: run_tests
-      #run: cd build && ./Debug/packtest.exe
+    - name: run_tests
+      run: cd build && ./Debug/packtest.exe
